@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}
+{% if user.is_therapist %}{{ conversation.user.public_name }}{% else %}{{ conversation.therapist.full_name }}{% endif %}
+— DzTherapy
+{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <div class="flex items-center justify-between mb-4">
+        <a href="{% url 'messaging:list' %}" class="text-sm text-slate-600 hover:text-slate-900">← {% trans "Toutes les conversations" %}</a>
+    </div>
+
+    <header class="bg-white border border-slate-200 rounded-md px-5 py-3 mb-3">
+        <p class="font-semibold text-slate-900">
+            {% if user.is_therapist %}{{ conversation.user.public_name }}{% else %}{{ conversation.therapist.full_name }}{% endif %}
+        </p>
+        {% if user.is_therapist and conversation.user.display_name %}
+        <p class="text-xs text-slate-500">{{ conversation.user.email }}</p>
+        {% endif %}
+    </header>
+
+    <div id="thread"
+         hx-get="{% url 'messaging:thread_messages' conversation_id=conversation.id %}"
+         hx-trigger="every 5s"
+         hx-swap="innerHTML">
+        {% include "messaging/_messages_partial.html" %}
+    </div>
+
+    <div id="compose" class="bg-white border border-slate-200 rounded-md px-4 py-3 mt-3">
+        <form id="message-form"
+              method="post"
+              action="{% url 'messaging:send' conversation_id=conversation.id %}"
+              hx-post="{% url 'messaging:send' conversation_id=conversation.id %}"
+              hx-target="#thread"
+              hx-swap="innerHTML"
+              hx-on::after-request="if(event.detail.successful) this.reset()">
+            {% csrf_token %}
+            {{ form.body }}
+            <div class="mt-2 flex justify-end">
+                <button type="submit" class="rounded-md bg-slate-900 px-4 py-2 text-sm text-white hover:bg-slate-700">
+                    {% trans "Envoyer" %}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

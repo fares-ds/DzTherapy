@@ -18,9 +18,10 @@ log = logging.getLogger(__name__)
 
 def send(to: str, subject: str, template: str, context: dict) -> bool:
     """Render a template pair (`{template}.txt` + `{template}.html`) and send."""
+    ctx = {**context, "site_url": settings.SITE_URL}
     try:
-        body_text = render_to_string(f"emails/{template}.txt", context)
-        body_html = render_to_string(f"emails/{template}.html", context)
+        body_text = render_to_string(f"emails/{template}.txt", ctx)
+        body_html = render_to_string(f"emails/{template}.html", ctx)
     except Exception:
         log.exception("Email template render failed (template=%s)", template)
         return False
@@ -143,4 +144,29 @@ def send_session_reminder(booking) -> None:
         subject="Rappel : séance demain",
         template="session_reminder",
         context=ctx,
+    )
+
+
+def send_new_message(message) -> None:
+    """In-app messaging — notify the recipient.
+
+    Throttling (don't email for every back-and-forth) is enforced upstream
+    in `messaging.services._maybe_notify`; this helper just delivers the mail.
+    """
+    convo = message.conversation
+    recipient = convo.other_party(message.sender)
+    sender_name = (
+        convo.therapist.full_name
+        if message.sender_id == convo.therapist.user_id
+        else (message.sender.public_name)
+    )
+    send(
+        to=recipient.email,
+        subject=f"Nouveau message de {sender_name}",
+        template="new_message",
+        context={
+            "conversation": convo,
+            "message": message,
+            "sender_name": sender_name,
+        },
     )

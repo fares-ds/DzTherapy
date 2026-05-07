@@ -2,3 +2,9 @@
 
 @source "../templates/**/*.html";
 @source "../core/**/*.py";
+
+@theme {
+    --color-accent-100: #e6efef;
+    --color-accent-500: #5b8a8a;
+    --color-accent-700: #3f6868;
+}

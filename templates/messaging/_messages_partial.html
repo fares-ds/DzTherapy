@@ -1,0 +1,20 @@
+{% load i18n %}
+<ul class="space-y-2">
+    {% for m in messages %}
+    {% with mine=m.sender_id|stringformat:"s" %}
+    <li class="flex {% if m.sender_id == user.id %}justify-end{% endif %}">
+        <div class="max-w-[80%] rounded-lg px-3 py-2 text-sm
+            {% if m.sender_id == user.id %}bg-slate-900 text-white{% else %}bg-white border border-slate-200 text-slate-900{% endif %}">
+            <p class="whitespace-pre-line">{{ m.body }}</p>
+            <p class="mt-1 text-[10px] {% if m.sender_id == user.id %}text-slate-300{% else %}text-slate-500{% endif %}">
+                {{ m.created_at|date:"H:i" }}
+            </p>
+        </div>
+    </li>
+    {% endwith %}
+    {% empty %}
+    <li class="text-center text-sm text-slate-500 py-6">
+        {% trans "Aucun message dans cette conversation. Écrivez le premier ci-dessous." %}
+    </li>
+    {% endfor %}
+</ul>

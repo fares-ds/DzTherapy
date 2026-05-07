@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% load static %}
+{% block title %}{% trans "Messages" %} — DzTherapy{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto">
+    <h1 class="text-2xl font-semibold text-slate-900 mb-4">{% trans "Messages" %}</h1>
+
+    <div class="bg-white border border-slate-200 rounded-md divide-y divide-slate-100">
+        {% for c in conversations %}
+        <a href="{{ c.get_absolute_url }}" class="px-4 py-3 hover:bg-slate-50 flex items-center justify-between gap-4">
+            <div class="min-w-0 flex-1">
+                <p class="font-medium text-slate-900 truncate">
+                    {% if c.viewer_is_therapist %}{{ c.user.public_name }}{% else %}{{ c.therapist.full_name }}{% endif %}
+                </p>
+                <p class="text-xs text-slate-500">
+                    {% if c.last_message_at %}{{ c.last_message_at|date:"j F · H:i" }}{% else %}{% trans "Conversation ouverte" %}{% endif %}
+                </p>
+            </div>
+            {% if c.unread_count %}
+            <span class="rounded-full bg-accent-500 text-white text-xs px-2 py-0.5 min-w-[1.5rem] text-center">{{ c.unread_count }}</span>
+            {% endif %}
+        </a>
+        {% empty %}
+        <div class="px-4 py-10 text-center">
+            <p class="text-sm text-slate-500">{% trans "Aucune conversation pour l'instant." %}</p>
+            {% if not user.is_therapist %}
+            <p class="text-sm text-slate-500 mt-1">
+                <a href="{% url 'therapists:list' %}" class="underline">{% trans "Trouver un·e thérapeute" %}</a>
+                {% trans "pour en démarrer une." %}
+            </p>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

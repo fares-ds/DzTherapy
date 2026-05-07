@@ -1,0 +1,13 @@
+Bonjour,
+
+Vous avez reçu un nouveau message de {{ sender_name }} :
+
+  « {{ message.body|truncatechars:280 }} »
+
+Répondre directement dans votre boîte de réception :
+{{ site_url }}{{ conversation.get_absolute_url }}
+
+Vous pouvez désactiver ces notifications en restant connecté·e à la
+plateforme — nous ne vous écrivons que lorsque vous êtes hors-ligne.
+
+— DzTherapy

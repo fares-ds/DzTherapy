@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     "therapists.apps.TherapistsConfig",
     "bookings.apps.BookingsConfig",
     "notifications.apps.NotificationsConfig",
+    "messaging.apps.MessagingConfig",
 ]
 
 MIDDLEWARE = [
@@ -68,6 +69,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "messaging.context_processors.unread_messages",
             ],
         },
     },
@@ -161,6 +163,10 @@ DEFAULT_FROM_EMAIL = env(
     default="DzTherapy <hello@dztherapy.example>",
 )
 RESEND_API_KEY = env("RESEND_API_KEY", default="")
+
+# Absolute base URL used in transactional emails (logos, CTAs) — emails have no
+# `request` so we can't build absolute URLs from one. Override per environment.
+SITE_URL = env("SITE_URL", default="http://localhost:8000")
 
 # Daily.co — stub if unset (booking flow falls back to a placeholder URL).
 DAILY_API_KEY = env("DAILY_API_KEY", default="")

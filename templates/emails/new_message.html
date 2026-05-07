@@ -1,0 +1,16 @@
+{% include "emails/_header.html" %}
+<p>Bonjour,</p>
+
+<p>Vous avez reçu un nouveau message de <strong>{{ sender_name }}</strong> :</p>
+
+<blockquote style="margin:0 0 1rem 0;padding:0.75rem 1rem;border-left:3px solid #5b8a8a;background:#e6efef;color:#0f172a;">
+  {{ message.body|truncatechars:280 }}
+</blockquote>
+
+<p><a href="{{ site_url }}{{ conversation.get_absolute_url }}" style="background:#0f172a;color:#fff;padding:8px 14px;border-radius:6px;text-decoration:none;">Répondre</a></p>
+
+<p style="color:#64748b;font-size:13px;margin-top:1.5rem;">
+  Vous pouvez désactiver ces notifications en restant connecté·e à la plateforme — nous ne vous écrivons que lorsque vous êtes hors-ligne.
+</p>
+
+<p>— DzTherapy</p>

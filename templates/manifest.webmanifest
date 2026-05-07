@@ -1,9 +1,35 @@
-{
+{% load static %}{
   "name": "DzTherapy",
   "short_name": "DzTherapy",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#f8fafc",
   "theme_color": "#0f172a",
-  "lang": "fr"
+  "lang": "fr",
+  "icons": [
+    {
+      "src": "{% static 'icons/icon-192.png' %}",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "{% static 'icons/icon-512.png' %}",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "{% static 'icons/icon-maskable-512.png' %}",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "{% static 'icons/apple-touch-icon.png' %}",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
 }

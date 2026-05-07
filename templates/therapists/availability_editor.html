@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load i18n %}
+{% load static %}
 {% block title %}{% trans "Disponibilités" %} — DzTherapy{% endblock %}
 
 {% block content %}
@@ -30,7 +31,10 @@
                     </form>
                 </li>
                 {% empty %}
-                <li class="text-sm text-slate-500 py-3">{% trans "Aucune plage pour l'instant." %}</li>
+                <li class="text-sm text-slate-500 py-6 text-center">
+                    <img src="{% static 'empty/empty-availability.svg' %}" alt="" class="h-28 w-auto mx-auto mb-3" loading="lazy">
+                    {% trans "Aucune plage pour l'instant." %}
+                </li>
                 {% endfor %}
             </ul>
 

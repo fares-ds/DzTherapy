@@ -1,3 +1,4 @@
+{% include "emails/_header.html" %}
 <p>Bonjour,</p>
 
 <p>Votre demande de séance avec <strong>{{ booking.therapist.full_name }}</strong> prévue le <strong>{{ booking.slot_start|date:"l j F Y H:i" }}</strong> n'a pas pu être confirmée.</p>

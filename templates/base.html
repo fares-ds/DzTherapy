@@ -7,8 +7,18 @@
     <meta name="theme-color" content="#0f172a">
     {% load static %}
     <link rel="icon" type="image/svg+xml" href="{% static 'favicon.svg' %}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'icons/favicon-32.png' %}">
+    <link rel="apple-touch-icon" href="{% static 'icons/apple-touch-icon.png' %}">
     <link rel="manifest" href="{% url 'core:manifest' %}">
     <title>{% block title %}DzTherapy — Bien-être émotionnel{% endblock %}</title>
+    <meta name="description" content="{% block meta_description %}DzTherapy met en relation les Algériennes et Algériens avec des psychologues vérifié·e·s, en toute discrétion.{% endblock %}">
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="fr_FR">
+    <meta property="og:site_name" content="DzTherapy">
+    <meta property="og:title" content="{% block og_title %}DzTherapy — Bien-être émotionnel{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}Psychologues vérifié·e·s, en toute discrétion. Réservez en quelques clics, payez directement votre praticien·ne, parlez par vidéo.{% endblock %}">
+    <meta property="og:image" content="{% block og_image %}{{ request.scheme }}://{{ request.get_host }}{% static 'social/og-default.png' %}{% endblock %}">
+    <meta name="twitter:card" content="summary_large_image">
     {% load tailwind_cli %}
     {% tailwind_css %}
     <script src="https://unpkg.com/htmx.org@2.0.4" crossorigin="anonymous"></script>
@@ -24,10 +34,18 @@
 <body class="bg-slate-50 text-slate-900 font-sans antialiased min-h-screen flex flex-col">
     <header class="border-b border-slate-200 bg-white">
         <div class="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
-            <a href="{% url 'core:home' %}" class="text-xl font-semibold tracking-tight">DzTherapy</a>
+            <a href="{% url 'core:home' %}" class="flex items-center" aria-label="DzTherapy">
+                <img src="{% static 'brand/logo-horizontal.svg' %}" alt="DzTherapy" width="180" height="42" class="h-9 w-auto">
+            </a>
             <nav class="flex items-center gap-3 text-sm">
                 <a href="{% url 'therapists:list' %}" class="text-slate-700 hover:text-slate-900 hidden sm:inline">{% trans "Thérapeutes" %}</a>
                 {% if user.is_authenticated %}
+                    <a href="{% url 'messaging:list' %}" class="text-slate-700 hover:text-slate-900 inline-flex items-center gap-1">
+                        {% trans "Messages" %}
+                        {% if unread_messages_total %}
+                        <span class="rounded-full bg-accent-500 text-white text-[10px] leading-none px-1.5 py-0.5 min-w-[1.1rem] text-center">{{ unread_messages_total }}</span>
+                        {% endif %}
+                    </a>
                     {% if user.is_therapist %}
                         <a href="{% url 'therapists:profile_editor' %}" class="text-slate-700 hover:text-slate-900">{% trans "Mon espace" %}</a>
                     {% else %}

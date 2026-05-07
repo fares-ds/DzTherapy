@@ -13,6 +13,7 @@ urlpatterns = [
     path("mon-compte/", include("accounts.urls")),
     path("therapeutes/", include("therapists.urls")),
     path("reservations/", include("bookings.urls")),
+    path("messages/", include("messaging.urls")),
     path("", include("core.urls")),
 ]
 

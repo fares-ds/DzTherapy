@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load i18n %}
+{% load static %}
 {% block title %}{% trans "Mes réservations" %} — DzTherapy{% endblock %}
 
 {% block content %}
@@ -34,7 +35,10 @@
             {% endfor %}
         </ul>
         {% else %}
-        <p class="text-sm text-slate-500">{% trans "Aucune séance à venir." %} <a href="{% url 'therapists:list' %}" class="underline">{% trans "Trouver un·e thérapeute" %}</a>.</p>
+        <div class="text-center py-6">
+            <img src="{% static 'empty/empty-sessions.svg' %}" alt="" class="h-32 w-auto mx-auto mb-3" loading="lazy">
+            <p class="text-sm text-slate-500">{% trans "Aucune séance à venir." %} <a href="{% url 'therapists:list' %}" class="underline">{% trans "Trouver un·e thérapeute" %}</a>.</p>
+        </div>
         {% endif %}
     </section>
 

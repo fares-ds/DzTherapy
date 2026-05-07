@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load i18n %}
+{% load static %}
 {% block title %}{% trans "Boîte de réception" %} — DzTherapy{% endblock %}
 
 {% block content %}
@@ -19,7 +20,10 @@
             {% for booking in bookings %}
                 {% include "therapists/_inbox_row_partial.html" %}
             {% empty %}
-                <li class="py-6 text-center text-slate-500 text-sm">{% trans "Aucune demande pour l'instant." %}</li>
+                <li class="py-8 text-center text-slate-500 text-sm">
+                    <img src="{% static 'empty/empty-inbox.svg' %}" alt="" class="h-32 w-auto mx-auto mb-3" loading="lazy">
+                    {% trans "Aucune demande pour l'instant." %}
+                </li>
             {% endfor %}
         </ul>
     </div>

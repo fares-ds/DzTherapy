@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load i18n %}
+{% load static %}
 {% block title %}{% trans "Patient·e·s" %} — DzTherapy{% endblock %}
 
 {% block content %}
@@ -28,7 +29,10 @@
                 </p>
             </li>
             {% empty %}
-            <li class="py-6 text-center text-slate-500 text-sm">{% trans "Aucun·e patient·e pour l'instant." %}</li>
+            <li class="py-8 text-center text-slate-500 text-sm">
+                <img src="{% static 'empty/empty-patients.svg' %}" alt="" class="h-32 w-auto mx-auto mb-3" loading="lazy">
+                {% trans "Aucun·e patient·e pour l'instant." %}
+            </li>
             {% endfor %}
         </ul>
     </div>

@@ -1,9 +1,11 @@
 {% extends "base.html" %}
 {% load i18n %}
+{% load static %}
 {% block title %}{% trans "Page introuvable" %} — DzTherapy{% endblock %}
 
 {% block content %}
 <div class="max-w-xl mx-auto text-center py-16">
+    <img src="{% static 'errors/error-404.svg' %}" alt="" class="h-40 w-auto mx-auto mb-6" loading="lazy">
     <p class="text-sm text-slate-500 mb-2">404</p>
     <h1 class="text-2xl font-semibold text-slate-900 mb-2">{% trans "Page introuvable" %}</h1>
     <p class="text-slate-600 mb-6">
