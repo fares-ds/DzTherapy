@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Politique de confidentialité — DzTherapy{% endblock %}
+
+{% block content %}
+<article class="prose max-w-3xl mx-auto bg-white border border-slate-200 rounded-md p-8">
+    <h1 class="text-2xl font-semibold mb-2">Politique de confidentialité</h1>
+    <p class="text-sm text-slate-500 mb-6">Brouillon — non révisé par un·e juriste algérien·ne. À remplacer avant lancement.</p>
+
+    <h2 class="text-lg font-semibold mt-6">1. Données collectées</h2>
+    <ul class="list-disc pl-5 space-y-1">
+        <li>Adresse e-mail et mot de passe (chiffré).</li>
+        <li>Pour les praticien·ne·s : nom, biographie, photo, spécialités, instructions de paiement.</li>
+        <li>Réservations : créneau horaire, statut de paiement, justificatif éventuel.</li>
+    </ul>
+
+    <h2 class="text-lg font-semibold mt-6">2. Données <em>non</em> collectées</h2>
+    <p>DzTherapy ne traite ni ne conserve aucune donnée bancaire (carte CIB, Edahabia, etc.). Le paiement se fait directement entre vous et votre praticien·ne.</p>
+
+    <h2 class="text-lg font-semibold mt-6">3. Communication vidéo</h2>
+    <p>Les séances vidéo passent par Daily.co. Le flux est chiffré en transit. Les sessions ne sont pas enregistrées par défaut.</p>
+
+    <h2 class="text-lg font-semibold mt-6">4. Vos droits</h2>
+    <p>Conformément à la loi algérienne 18-07 sur la protection des données personnelles, vous pouvez à tout moment demander l'accès, la rectification ou la suppression de vos données via <a class="text-slate-900 underline" href="mailto:privacy@dztherapy.example">privacy@dztherapy.example</a>.</p>
+
+    <h2 class="text-lg font-semibold mt-6">5. Conservation</h2>
+    <p>Les données de réservation sont conservées 3 ans après la dernière séance pour des raisons de continuité de soins. Les comptes inactifs depuis plus de 24 mois sont anonymisés.</p>
+</article>
+{% endblock %}

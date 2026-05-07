@@ -1,0 +1,9 @@
+Bonjour {{ booking.therapist.full_name }},
+
+Votre patient·e {{ booking.user.email }} indique avoir réglé la séance prévue
+le {{ booking.slot_start|date:"l j F Y H:i" }}.
+
+Merci de vérifier la réception du paiement et de confirmer dans votre boîte
+de réception. La séance sera confirmée dès que vous validerez.
+
+— DzTherapy

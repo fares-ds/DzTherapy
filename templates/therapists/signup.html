@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "Inscription thérapeute" %} — DzTherapy{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto bg-white border border-slate-200 rounded-md p-6 sm:p-8">
+    <h1 class="text-2xl font-semibold text-slate-900 mb-1">{% trans "Rejoindre DzTherapy" %}</h1>
+    <p class="text-slate-600 mb-6">
+        {% trans "Inscription gratuite et sans commission. Votre profil sera vérifié manuellement par notre équipe avant publication." %}
+    </p>
+
+    <form method="post" class="space-y-4">
+        {% csrf_token %}
+        {% for field in form %}
+        <div>
+            <label class="block text-sm font-medium text-slate-700">{{ field.label }}</label>
+            {{ field }}
+            {% if field.help_text %}<p class="mt-1 text-xs text-slate-500">{{ field.help_text }}</p>{% endif %}
+            {% for error in field.errors %}<p class="mt-1 text-sm text-red-600">{{ error }}</p>{% endfor %}
+        </div>
+        {% endfor %}
+        {% for error in form.non_field_errors %}<p class="text-sm text-red-600">{{ error }}</p>{% endfor %}
+        <button type="submit" class="w-full rounded-md bg-slate-900 px-4 py-2.5 text-white hover:bg-slate-700">
+            {% trans "Créer mon compte" %}
+        </button>
+    </form>
+</div>
+
+<style>
+    form input, form textarea {
+        width: 100%;
+        padding: 0.5rem 0.75rem;
+        border: 1px solid rgb(203 213 225);
+        border-radius: 0.375rem;
+        margin-top: 0.25rem;
+        font-size: 0.875rem;
+    }
+    form input:focus, form textarea:focus {
+        outline: 2px solid rgb(15 23 42);
+        outline-offset: -1px;
+        border-color: transparent;
+    }
+</style>
+{% endblock %}

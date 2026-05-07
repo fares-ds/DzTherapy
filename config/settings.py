@@ -30,18 +30,27 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django.contrib.sites",
     "django_tailwind_cli",
+    "allauth",
+    "allauth.account",
     "core",
+    "accounts.apps.AccountsConfig",
+    "therapists.apps.TherapistsConfig",
+    "bookings.apps.BookingsConfig",
+    "notifications.apps.NotificationsConfig",
 ]
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.locale.LocaleMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "allauth.account.middleware.AccountMiddleware",
 ]
 
 ROOT_URLCONF = "config.urls"
@@ -66,6 +75,13 @@ ASGI_APPLICATION = "config.asgi.application"
 
 DATABASES = {"default": env.db("DATABASE_URL")}
 
+AUTH_USER_MODEL = "accounts.User"
+
+AUTHENTICATION_BACKENDS = [
+    "django.contrib.auth.backends.ModelBackend",
+    "allauth.account.auth_backends.AuthenticationBackend",
+]
+
 AUTH_PASSWORD_VALIDATORS = [
     {
         "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"
@@ -75,9 +91,11 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
 
-# C4 will switch LANGUAGE_CODE to "fr" and add LOCALE_PATHS.
-LANGUAGE_CODE = "en-us"
-TIME_ZONE = "UTC"
+# Localization — French at MVP; Arabic added in Phase 2.
+LANGUAGE_CODE = "fr"
+LANGUAGES = [("fr", "Français")]
+LOCALE_PATHS = [BASE_DIR / "locale"]
+TIME_ZONE = "Africa/Algiers"
 USE_I18N = True
 USE_TZ = True
 
@@ -85,10 +103,39 @@ STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_DIRS = [BASE_DIR / "assets"]
 
+MEDIA_URL = "media/"
+MEDIA_ROOT = BASE_DIR / "media"
+
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # django-tailwind-cli
 TAILWIND_CLI_SRC_CSS = BASE_DIR / "tailwind" / "input.css"
+
+# allauth (v65+ syntax)
+SITE_ID = 1
+ACCOUNT_LOGIN_METHODS = {"email"}
+ACCOUNT_SIGNUP_FIELDS = ["email*", "password1*", "password2*"]
+ACCOUNT_EMAIL_VERIFICATION = "optional"
+ACCOUNT_UNIQUE_EMAIL = True
+ACCOUNT_USER_MODEL_USERNAME_FIELD = "username"
+ACCOUNT_DEFAULT_HTTP_PROTOCOL = "http" if DEBUG else "https"
+LOGIN_REDIRECT_URL = "/"
+LOGOUT_REDIRECT_URL = "/"
+
+# Email — console backend in dev; production swaps to Resend (see notifications app).
+EMAIL_BACKEND = env(
+    "EMAIL_BACKEND",
+    default="django.core.mail.backends.console.EmailBackend",
+)
+DEFAULT_FROM_EMAIL = env(
+    "DEFAULT_FROM_EMAIL",
+    default="DzTherapy <hello@dztherapy.example>",
+)
+RESEND_API_KEY = env("RESEND_API_KEY", default="")
+
+# Daily.co — stub if unset (booking flow falls back to a placeholder URL).
+DAILY_API_KEY = env("DAILY_API_KEY", default="")
+DAILY_DOMAIN = env("DAILY_DOMAIN", default="dztherapy")
 
 # Sentry — initialized only when SENTRY_DSN is non-empty (silent in dev by default).
 SENTRY_DSN = env("SENTRY_DSN", default="")

@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "Séance" %} — DzTherapy{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto">
+    <div class="bg-white border border-slate-200 rounded-md p-6 mb-4">
+        <h1 class="text-xl font-semibold text-slate-900 mb-1">
+            {% trans "Séance avec" %} {{ booking.therapist.full_name }}
+        </h1>
+        <p class="text-sm text-slate-600">
+            {{ booking.slot_start|date:"l j F · H:i" }} → {{ booking.slot_end|date:"H:i" }}
+        </p>
+    </div>
+
+    {% if booking.can_join_session %}
+    <div class="aspect-video rounded-md overflow-hidden border border-slate-200 bg-slate-900">
+        <iframe
+            src="{{ booking.daily_room_url }}"
+            allow="camera; microphone; fullscreen; speaker; display-capture"
+            class="w-full h-full"
+            title="{% trans 'Salon vidéo' %}">
+        </iframe>
+    </div>
+    <p class="mt-3 text-xs text-slate-500">
+        {% trans "Si la vidéo ne s'affiche pas," %}
+        <a class="underline" href="{{ booking.daily_room_url }}" target="_blank" rel="noopener">{% trans "ouvrez ce lien" %}</a>.
+    </p>
+    {% else %}
+    <div class="rounded-md border border-slate-200 bg-amber-50 p-5 text-sm text-amber-900">
+        {% trans "Le lien vidéo sera disponible dès que votre thérapeute aura confirmé la réception du paiement." %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

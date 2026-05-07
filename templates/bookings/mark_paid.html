@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "Confirmer le paiement" %} — DzTherapy{% endblock %}
+
+{% block content %}
+<div class="max-w-xl mx-auto bg-white border border-slate-200 rounded-md p-6 sm:p-8">
+    <h1 class="text-2xl font-semibold text-slate-900 mb-1">{% trans "J'ai effectué le paiement" %}</h1>
+    <p class="text-slate-600 mb-5">
+        {% trans "Vous pouvez joindre un justificatif (capture d'écran, reçu) — c'est facultatif mais accélère la confirmation." %}
+    </p>
+
+    <form method="post" enctype="multipart/form-data" class="space-y-4">
+        {% csrf_token %}
+        <div>
+            <label class="block text-sm font-medium text-slate-700">{{ form.receipt.label }}</label>
+            {{ form.receipt }}
+        </div>
+        <button type="submit" class="w-full rounded-md bg-slate-900 px-4 py-2.5 text-white hover:bg-slate-700">
+            {% trans "Confirmer" %}
+        </button>
+    </form>
+</div>
+{% endblock %}

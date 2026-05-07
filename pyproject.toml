@@ -14,6 +14,9 @@ dependencies = [
     "django-environ>=0.11",
     "django-tailwind-cli>=2.7",
     "sentry-sdk[django]>=2.18",
+    "django-allauth>=65.0",
+    "pillow>=11.0",
+    "requests>=2.32",
 ]
 
 [project.optional-dependencies]

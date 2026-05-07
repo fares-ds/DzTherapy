@@ -118,7 +118,7 @@ These are non-negotiable for DzTherapy. Every suggestion must respect them.
 
 ## 8. Project State and Source of Truth
 
-- **Skeleton scaffolded 2026-05-07.** Django project + Postgres via Docker + HTMX + Alpine + Tailwind + pytest are wired up; application code (custom User, therapist/booking models, allauth) is not yet written. Folder contents: this `CLAUDE.md`, the PRD ([algeria_mental_health_saas_prd.md](algeria_mental_health_saas_prd.md)), [TASKS.md](TASKS.md), [README.md](README.md), Django skeleton (`config/`, `core/`, `templates/`, `tailwind/`), `manage.py`, `pyproject.toml`, `Makefile`, `docker-compose.yml`, `.env.example`.
+- **MVP functional 2026-05-07.** End-to-end booking flow works: therapist signup → admin verification → public listing → user signup → slot picking → pass-through payment → therapist confirmation → Daily.co session link. French throughout. See [ARCHITECTURE.md](ARCHITECTURE.md) for the full layout.
 - **The PRD is the source of truth** for product strategy, business model, MVP scope, roadmap, risks, and validated/unvalidated assumptions. Read it before suggesting features or making architectural decisions.
 - **Tech stack — locked** (canonical details in [PRD §13](algeria_mental_health_saas_prd.md)):
   - **Web framework:** Django 5.x (single monolith) + Django Templates + HTMX + Alpine.js + Tailwind CSS (standalone CLI, no Node).
@@ -152,14 +152,16 @@ make format               # ruff --fix + black (auto-fix)
 
 ## 10. Architecture
 
-Current state of the codebase (skeleton only — domain models land in Tracks C onward):
+Single Django monolith. Apps:
 
-- **`config/`** — project package: `settings.py` (single file, env-driven via `django-environ`), `urls.py` (mounts `core.urls` at `/`), `wsgi.py`, `asgi.py`.
-- **`core/`** — smoke-test app with a home view and an HTMX demo partial. Disposable / can grow into a public-pages app.
-- **`templates/`** — project-wide templates. `base.html` carries the Tailwind CSS link, HTMX, and Alpine includes. App templates live under `templates/<app>/`.
-- **`tailwind/input.css`** — Tailwind v4 source; `@source` directives scan `templates/` and `core/`.
-- **External in MVP:** PostgreSQL only (via `docker-compose.yml`). Daily.co, Resend, R2 are not yet wired.
-- **PWA assets** served by `core` views: `/manifest.webmanifest` and `/sw.js`. The service worker is intentionally root-scoped (`/`) so it can intercept all navigations; templates live at `templates/manifest.webmanifest` and `templates/sw.js`.
+- **`config/`** — project package (`settings.py`, root `urls.py`, `wsgi.py`, `asgi.py`).
+- **`core/`** — public landing, T&Cs, Privacy, PWA manifest+SW, founder dashboard view (staff-only, `/admin/dztherapy/dashboard/`).
+- **`accounts/`** — custom `User` model with `role` field (`end_user` | `therapist`); allauth integration for email-based auth.
+- **`therapists/`** — `TherapistProfile`, `Availability`, `AvailabilityException`, the slot-generation service, public list/detail views, and the therapist dashboard (profile editor, availability editor, booking inbox, patient list).
+- **`bookings/`** — `Booking` + `BookingState` machine, the user-facing booking flow (create → pay-instructions → mark-paid → session-room), `services.create_daily_room` (real Daily.co or stub).
+- **`notifications/`** — `email.send()` Resend-or-console wrapper + `send_booking_submitted` / `send_payment_marked` / `send_booking_confirmed` lifecycle helpers; templates in `templates/emails/`.
+
+`templates/` is project-wide (DIRS), not per-app — `base.html` carries Tailwind link + HTMX/Alpine + PWA wiring; allauth templates extend `templates/account/base.html` which itself extends `base.html`. See [ARCHITECTURE.md](ARCHITECTURE.md) for the full request flow and state machines.
 
 ## 11. Conventions
 

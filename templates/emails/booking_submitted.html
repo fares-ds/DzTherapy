@@ -1,0 +1,12 @@
+<p>Bonjour {{ booking.therapist.full_name }},</p>
+
+<p>Vous avez reçu une nouvelle demande de séance :</p>
+
+<ul>
+  <li><strong>Patient·e :</strong> {{ booking.user.email }}</li>
+  <li><strong>Créneau :</strong> {{ booking.slot_start|date:"l j F Y H:i" }}</li>
+</ul>
+
+<p>L'utilisateur·rice doit maintenant régler la séance directement via les instructions de paiement de votre profil. Vous serez notifié·e dès qu'iel aura signalé le paiement.</p>
+
+<p>— DzTherapy</p>

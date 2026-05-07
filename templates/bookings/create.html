@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "Confirmer la réservation" %} — DzTherapy{% endblock %}
+
+{% block content %}
+<div class="max-w-xl mx-auto bg-white border border-slate-200 rounded-md p-6 sm:p-8">
+    <h1 class="text-2xl font-semibold text-slate-900 mb-1">{% trans "Confirmer votre réservation" %}</h1>
+    <p class="text-slate-600 mb-5">
+        {% trans "Avec" %} <strong>{{ therapist.full_name }}</strong> ·
+        {{ slot_start|date:"l j F · H:i" }} → {{ slot_end|date:"H:i" }}
+    </p>
+
+    <form method="post" class="space-y-4">
+        {% csrf_token %}
+        <input type="hidden" name="slot" value="{{ slot_start.isoformat }}">
+
+        <div>
+            <label class="block text-sm font-medium text-slate-700">{{ form.user_notes.label }}</label>
+            {{ form.user_notes }}
+        </div>
+
+        <label class="flex items-start gap-3 text-sm text-slate-700 bg-slate-50 border border-slate-200 rounded-md p-3">
+            {{ form.accept_disclaimer }}
+            <span>{{ form.accept_disclaimer.label }}</span>
+        </label>
+        {% for error in form.accept_disclaimer.errors %}<p class="text-sm text-red-600">{{ error }}</p>{% endfor %}
+
+        <button type="submit" class="w-full rounded-md bg-slate-900 px-4 py-2.5 text-white hover:bg-slate-700">
+            {% trans "Réserver et voir les instructions de paiement" %}
+        </button>
+    </form>
+</div>
+
+<style>
+    form textarea, form input[type="text"] {
+        width: 100%;
+        padding: 0.5rem 0.75rem;
+        border: 1px solid rgb(203 213 225);
+        border-radius: 0.375rem;
+        margin-top: 0.25rem;
+        font-size: 0.875rem;
+    }
+</style>
+{% endblock %}

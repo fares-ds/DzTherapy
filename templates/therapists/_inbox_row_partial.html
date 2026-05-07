@@ -1,0 +1,40 @@
+{% load i18n %}
+<li id="booking-{{ booking.id }}" class="py-4 flex items-start justify-between gap-4">
+    <div class="flex-1">
+        <p class="font-medium text-slate-900">{{ booking.user.email }}</p>
+        <p class="text-sm text-slate-600">
+            {{ booking.slot_start|date:"l j F · H:i" }} → {{ booking.slot_end|date:"H:i" }}
+        </p>
+        {% if booking.user_notes %}
+        <p class="mt-1 text-sm italic text-slate-500">« {{ booking.user_notes }} »</p>
+        {% endif %}
+        {% if booking.receipt %}
+        <p class="mt-1 text-xs"><a class="text-slate-600 underline" href="{{ booking.receipt.url }}">{% trans "Voir le justificatif" %}</a></p>
+        {% endif %}
+    </div>
+    <div class="text-right space-y-2">
+        <span class="inline-block rounded-full px-2.5 py-0.5 text-xs
+            {% if booking.state == 'pending_payment' %}bg-amber-50 text-amber-700
+            {% elif booking.state == 'awaiting_confirmation' %}bg-sky-50 text-sky-700
+            {% elif booking.state == 'confirmed' %}bg-emerald-50 text-emerald-700
+            {% elif booking.state == 'cancelled' or booking.state == 'no_show' %}bg-slate-100 text-slate-600
+            {% else %}bg-slate-100 text-slate-700{% endif %}">
+            {{ booking.get_state_display }}
+        </span>
+        {% if booking.state == 'awaiting_confirmation' %}
+        <form method="post" action="{% url 'therapists:confirm_payment' booking_id=booking.id %}"
+              hx-post="{% url 'therapists:confirm_payment' booking_id=booking.id %}"
+              hx-target="#booking-{{ booking.id }}"
+              hx-swap="outerHTML">
+            {% csrf_token %}
+            <button type="submit" class="text-xs rounded-md bg-emerald-600 px-3 py-1.5 text-white hover:bg-emerald-700">
+                {% trans "Confirmer le paiement" %}
+            </button>
+        </form>
+        {% elif booking.state == 'confirmed' %}
+        <a href="{% url 'bookings:session_room' booking_id=booking.id %}" class="block text-xs rounded-md border border-slate-300 px-3 py-1.5 hover:bg-slate-50">
+            {% trans "Rejoindre la séance" %}
+        </a>
+        {% endif %}
+    </div>
+</li>

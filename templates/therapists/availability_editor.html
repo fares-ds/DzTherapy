@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "Disponibilités" %} — DzTherapy{% endblock %}
+
+{% block content %}
+<div class="grid gap-6 lg:grid-cols-3">
+    <aside class="lg:col-span-1">
+        <nav class="rounded-md border border-slate-200 bg-white p-3 text-sm">
+            <a class="block px-3 py-2 rounded hover:bg-slate-50" href="{% url 'therapists:profile_editor' %}">{% trans "Profil" %}</a>
+            <a class="block px-3 py-2 rounded bg-slate-100 font-medium text-slate-900" href="{% url 'therapists:availability_editor' %}">{% trans "Disponibilités" %}</a>
+            <a class="block px-3 py-2 rounded hover:bg-slate-50" href="{% url 'therapists:booking_inbox' %}">{% trans "Boîte de réception" %}</a>
+            <a class="block px-3 py-2 rounded hover:bg-slate-50" href="{% url 'therapists:patient_list' %}">{% trans "Patient·e·s" %}</a>
+        </nav>
+    </aside>
+
+    <div class="lg:col-span-2 space-y-6">
+        <section class="rounded-md border border-slate-200 bg-white p-6">
+            <h1 class="text-xl font-semibold text-slate-900 mb-1">{% trans "Disponibilités hebdomadaires" %}</h1>
+            <p class="text-sm text-slate-600 mb-4">
+                {% trans "Définissez vos plages récurrentes. Les créneaux sont découpés selon la durée de séance définie dans votre profil." %}
+            </p>
+
+            <ul class="divide-y divide-slate-100 mb-4">
+                {% for slot in slots %}
+                <li class="flex items-center justify-between py-2.5">
+                    <span class="text-sm">{{ slot.get_weekday_display }} · {{ slot.start_time|time:"H:i" }} – {{ slot.end_time|time:"H:i" }}</span>
+                    <form method="post" action="{% url 'therapists:availability_delete' availability_id=slot.id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="text-xs text-red-600 hover:underline">{% trans "Supprimer" %}</button>
+                    </form>
+                </li>
+                {% empty %}
+                <li class="text-sm text-slate-500 py-3">{% trans "Aucune plage pour l'instant." %}</li>
+                {% endfor %}
+            </ul>
+
+            <form method="post" class="grid gap-3 sm:grid-cols-4">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="add_slot">
+                <div class="sm:col-span-2">
+                    <label class="text-xs text-slate-500">{% trans "Jour" %}</label>
+                    {{ slot_form.weekday }}
+                </div>
+                <div>
+                    <label class="text-xs text-slate-500">{% trans "Début" %}</label>
+                    {{ slot_form.start_time }}
+                </div>
+                <div>
+                    <label class="text-xs text-slate-500">{% trans "Fin" %}</label>
+                    {{ slot_form.end_time }}
+                </div>
+                <button type="submit" class="sm:col-span-4 rounded-md bg-slate-900 px-4 py-2 text-white hover:bg-slate-700">
+                    {% trans "Ajouter cette plage" %}
+                </button>
+            </form>
+        </section>
+
+        <section class="rounded-md border border-slate-200 bg-white p-6">
+            <h2 class="text-lg font-semibold text-slate-900 mb-1">{% trans "Dates bloquées" %}</h2>
+            <p class="text-sm text-slate-600 mb-4">{% trans "Vacances, formations, jours fériés…" %}</p>
+
+            <ul class="divide-y divide-slate-100 mb-4">
+                {% for ex in exceptions %}
+                <li class="flex items-center justify-between py-2.5">
+                    <span class="text-sm">{{ ex.date|date:"l j F Y" }}{% if ex.reason %} · <span class="text-slate-500">{{ ex.reason }}</span>{% endif %}</span>
+                    <form method="post" action="{% url 'therapists:exception_delete' exception_id=ex.id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="text-xs text-red-600 hover:underline">{% trans "Réactiver" %}</button>
+                    </form>
+                </li>
+                {% empty %}
+                <li class="text-sm text-slate-500 py-3">{% trans "Aucune date bloquée." %}</li>
+                {% endfor %}
+            </ul>
+
+            <form method="post" class="grid gap-3 sm:grid-cols-3">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="add_exception">
+                <div>
+                    <label class="text-xs text-slate-500">{% trans "Date" %}</label>
+                    {{ exception_form.date }}
+                </div>
+                <div class="sm:col-span-2">
+                    <label class="text-xs text-slate-500">{% trans "Raison (optionnelle)" %}</label>
+                    {{ exception_form.reason }}
+                </div>
+                <button type="submit" class="sm:col-span-3 rounded-md bg-slate-900 px-4 py-2 text-white hover:bg-slate-700">
+                    {% trans "Bloquer cette date" %}
+                </button>
+            </form>
+        </section>
+    </div>
+</div>
+
+<style>
+    form input, form select {
+        width: 100%;
+        padding: 0.4rem 0.6rem;
+        border: 1px solid rgb(203 213 225);
+        border-radius: 0.375rem;
+        font-size: 0.875rem;
+    }
+</style>
+{% endblock %}

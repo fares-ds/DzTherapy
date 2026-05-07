@@ -1,0 +1,69 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Tableau de bord DzTherapy" %}{% endblock %}
+{% block branding %}<h1 id="site-name"><a href="{% url 'admin:index' %}">DzTherapy</a></h1>{% endblock %}
+
+{% block content %}
+<style>
+  .dz-grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); margin-bottom: 1.5rem; }
+  .dz-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 1rem 1.2rem; }
+  .dz-card .label { color: #64748b; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.04em; }
+  .dz-card .value { color: #0f172a; font-size: 1.6rem; font-weight: 600; margin-top: 0.25rem; }
+  .dz-card .hint { color: #64748b; font-size: 0.85rem; margin-top: 0.25rem; }
+  .dz-section { background: #fff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 1rem 1.2rem; margin-bottom: 1rem; }
+  .dz-section h2 { font-size: 1rem; margin: 0 0 0.5rem 0; }
+  table.dz-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+  table.dz-table th, table.dz-table td { padding: 0.5rem 0.6rem; border-bottom: 1px solid #f1f5f9; text-align: left; }
+</style>
+
+<h1>{% trans "Tableau de bord DzTherapy" %}</h1>
+
+<section class="dz-grid">
+  <div class="dz-card">
+    <div class="label">{% trans "Thérapeutes approuvé·e·s" %}</div>
+    <div class="value">{{ approved_therapists }}</div>
+    <div class="hint">{% trans "actif·ve·s cette semaine" %} : {{ active_therapists }}</div>
+  </div>
+  <div class="dz-card">
+    <div class="label">{% trans "À vérifier" %}</div>
+    <div class="value">{{ pending_verifications }}</div>
+    <div class="hint"><a href="/admin/therapists/therapistprofile/?verification_status__exact=pending">{% trans "Voir la file" %} →</a></div>
+  </div>
+  <div class="dz-card">
+    <div class="label">{% trans "Taux de complétion" %}</div>
+    <div class="value">
+      {% if completion_rate is not None %}{{ completion_rate|floatformat:0 }}%{% else %}—{% endif %}
+    </div>
+    <div class="hint">{% trans "des séances passées (terminé / (terminé + absent))" %}</div>
+  </div>
+</section>
+
+<section class="dz-section">
+  <h2>{% trans "Réservations par semaine (4 dernières)" %}</h2>
+  <table class="dz-table">
+    <thead><tr><th>{% trans "Semaine se terminant" %}</th><th>{% trans "Réservations" %}</th></tr></thead>
+    <tbody>
+      {% for w in weekly_bookings %}
+      <tr><td>{{ w.week_ending|date:"j M Y" }}</td><td>{{ w.count }}</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+
+<section class="dz-section">
+  <h2>{% trans "Répartition des réservations par état" %}</h2>
+  <table class="dz-table">
+    <thead><tr><th>{% trans "État" %}</th><th>{% trans "Nombre" %}</th></tr></thead>
+    <tbody>
+      {% for label, count in by_state_rows %}
+      <tr><td>{{ label }}</td><td>{{ count }}</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+
+<p style="font-size: 0.85rem; color: #64748b;">
+  ← <a href="{% url 'admin:index' %}">{% trans "Retour à l'admin" %}</a>
+</p>
+{% endblock %}

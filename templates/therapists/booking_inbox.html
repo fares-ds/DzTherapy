@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "Boîte de réception" %} — DzTherapy{% endblock %}
+
+{% block content %}
+<div class="grid gap-6 lg:grid-cols-3">
+    <aside class="lg:col-span-1">
+        <nav class="rounded-md border border-slate-200 bg-white p-3 text-sm">
+            <a class="block px-3 py-2 rounded hover:bg-slate-50" href="{% url 'therapists:profile_editor' %}">{% trans "Profil" %}</a>
+            <a class="block px-3 py-2 rounded hover:bg-slate-50" href="{% url 'therapists:availability_editor' %}">{% trans "Disponibilités" %}</a>
+            <a class="block px-3 py-2 rounded bg-slate-100 font-medium text-slate-900" href="{% url 'therapists:booking_inbox' %}">{% trans "Boîte de réception" %}</a>
+            <a class="block px-3 py-2 rounded hover:bg-slate-50" href="{% url 'therapists:patient_list' %}">{% trans "Patient·e·s" %}</a>
+        </nav>
+    </aside>
+
+    <div class="lg:col-span-2 rounded-md border border-slate-200 bg-white p-6">
+        <h1 class="text-xl font-semibold text-slate-900 mb-4">{% trans "Demandes & séances" %}</h1>
+        <ul class="divide-y divide-slate-100">
+            {% for booking in bookings %}
+                {% include "therapists/_inbox_row_partial.html" %}
+            {% empty %}
+                <li class="py-6 text-center text-slate-500 text-sm">{% trans "Aucune demande pour l'instant." %}</li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+{% endblock %}

@@ -1,34 +1,38 @@
 {% extends "base.html" %}
+{% load i18n %}
 
 {% block content %}
-<div class="space-y-8">
-    <section>
-        <h2 class="text-lg font-semibold mb-2">Skeleton smoke test</h2>
-        <p class="text-slate-600">
-            Si vous voyez ce style appliqué (fond clair, typographie sans-serif),
-            Tailwind est correctement chargé.
-        </p>
-    </section>
+<section class="text-center py-12 sm:py-20">
+    <h1 class="text-3xl sm:text-5xl font-semibold tracking-tight text-slate-900">
+        {% trans "Du soutien émotionnel, simplement." %}
+    </h1>
+    <p class="mt-4 text-lg text-slate-600 max-w-2xl mx-auto">
+        {% trans "DzTherapy met en relation les Algériennes et Algériens avec des psychologues vérifié·e·s, en toute discrétion. Réservez en quelques clics, payez directement votre praticien·ne, parlez par vidéo." %}
+    </p>
+    <div class="mt-8 flex justify-center gap-3">
+        <a href="{% url 'therapists:list' %}" class="rounded-md bg-slate-900 px-5 py-2.5 text-white hover:bg-slate-700">
+            {% trans "Trouver un·e thérapeute" %}
+        </a>
+        {% if not user.is_authenticated %}
+        <a href="{% url 'account_signup' %}" class="rounded-md border border-slate-300 bg-white px-5 py-2.5 text-slate-900 hover:bg-slate-50">
+            {% trans "Créer un compte" %}
+        </a>
+        {% endif %}
+    </div>
+</section>
 
-    <section x-data="{ count: 0 }" class="rounded-md border border-slate-200 bg-white p-4">
-        <h3 class="font-medium mb-2">Alpine.js</h3>
-        <button
-            class="rounded bg-slate-900 px-3 py-1.5 text-sm text-white hover:bg-slate-700"
-            @click="count++"
-        >
-            Cliquer (<span x-text="count"></span>)
-        </button>
-    </section>
-
-    <section class="rounded-md border border-slate-200 bg-white p-4">
-        <h3 class="font-medium mb-2">HTMX</h3>
-        <button
-            class="rounded bg-slate-900 px-3 py-1.5 text-sm text-white hover:bg-slate-700"
-            hx-get="{% url 'core:htmx_demo' %}"
-            hx-swap="outerHTML"
-        >
-            Charger un partiel
-        </button>
-    </section>
-</div>
+<section class="grid gap-4 sm:grid-cols-3 mt-8">
+    <div class="rounded-md border border-slate-200 bg-white p-5">
+        <h3 class="font-semibold text-slate-900">{% trans "Vérifié·e·s" %}</h3>
+        <p class="mt-1 text-sm text-slate-600">{% trans "Chaque thérapeute est sélectionné·e à la main par notre équipe." %}</p>
+    </div>
+    <div class="rounded-md border border-slate-200 bg-white p-5">
+        <h3 class="font-semibold text-slate-900">{% trans "Sans commission" %}</h3>
+        <p class="mt-1 text-sm text-slate-600">{% trans "DzTherapy ne prélève rien sur vos séances. Vous payez directement votre praticien·ne." %}</p>
+    </div>
+    <div class="rounded-md border border-slate-200 bg-white p-5">
+        <h3 class="font-semibold text-slate-900">{% trans "Privé" %}</h3>
+        <p class="mt-1 text-sm text-slate-600">{% trans "Aucune donnée de paiement n'est conservée par la plateforme." %}</p>
+    </div>
+</section>
 {% endblock %}
