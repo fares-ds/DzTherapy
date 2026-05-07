@@ -1,0 +1,52 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "dztherapy"
+version = "0.0.1"
+description = "Therapy / mental wellness SaaS for the Algerian market"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "django>=5.1,<6.0",
+    "psycopg[binary]>=3.2",
+    "django-environ>=0.11",
+    "django-tailwind-cli>=2.7",
+    "sentry-sdk[django]>=2.18",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.3",
+    "pytest-django>=4.9",
+    "factory-boy>=3.3",
+    "ruff>=0.6",
+    "black>=24.0",
+    "pre-commit>=3.7",
+]
+
+[tool.setuptools.packages.find]
+include = ["config*", "core*"]
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "config.settings"
+python_files = ["test_*.py", "*_test.py", "tests.py"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 88
+target-version = "py312"
+extend-exclude = ["migrations"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "DJ"]
+ignore = ["E501"]  # line length is handled by black
+
+[tool.ruff.lint.per-file-ignores]
+"core/tests/*" = ["B"]
+
+[tool.black]
+line-length = 88
+target-version = ["py312"]
+extend-exclude = "migrations"

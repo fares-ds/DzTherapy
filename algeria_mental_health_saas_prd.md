@@ -339,65 +339,84 @@ The platform must **never** market AI as a replacement for therapists. AI is pos
 
 ---
 
-# 13. Recommended Technology Stack
+# 13. Technology Stack — Locked
 
-> Optimized for **bootstrapped runway**, not just buildability. Every choice prefers a free tier we will not outgrow in 18 months.
+> Locked 2026-05-07. Optimized for bootstrap runway and a Python-strong solo founder using AI assistants heavily.
 
-## Backend
-- **Python + FastAPI** (or Next.js API routes if the team is JS-only — re-evaluate based on team skill, decide once)
-- **PostgreSQL** — Supabase or Neon free tier
-- **No Redis at MVP** — defer until we have a workload that needs it
-- **No WebSockets at MVP** — no real-time messaging in v1
+## Web framework
+- **Django 5.x** as a single monolithic app. One repo, one deploy, one language.
+- **Server-rendered Django Templates + HTMX + Alpine.js** for dynamic UI without React.
+- **Tailwind CSS** via the standalone CLI binary — no Node toolchain required.
 
-## Frontend
-- **Next.js + TailwindCSS** on **Vercel free tier**
-- Responsive PWA only — no React Native at MVP
+## Why Django (not FastAPI, not Next.js)
+- **Django admin = the founder's ops dashboard for free** — therapist verification queue, payment dispute resolution, content moderation, internal dashboards. Zero custom code; would be weeks of work in FastAPI/Next.js.
+- Built-in auth, ORM, migrations, forms, i18n. Each is a multi-week project in FastAPI.
+- Django i18n handles French + Arabic/RTL well — matches §8 localization plan.
+- Server-rendered HTML works better on slow Algerian mobile networks than a JS-heavy SPA.
+- Plays directly to the founder's existing Python/Django skill.
 
-## Mobile
-- PWA in MVP and Phase 2
-- React Native evaluated only after paid tier launches and we have revenue
+## Database
+- **PostgreSQL** — Docker Compose locally; production hosting deferred (likely Railway, Fly.io, Neon, or Supabase Postgres).
+- **Django ORM** + Django migrations. No SQLAlchemy / no Alembic.
 
-## Infrastructure
-- **Drop Kubernetes** — premature complexity, monthly cost
-- **Drop Docker for local dev** unless team needs it; deploy directly to Vercel/Railway/Fly
-- Object storage: free tier of Supabase Storage or Cloudflare R2 (cheaper egress)
-- Transactional email: Resend or Postmark
+## Auth
+- `django.contrib.auth` — user model + session auth.
+- `django-allauth` — email verification, password reset, future OAuth.
+- Single `User` model with a `role` field (`end_user` | `therapist`); a separate `TherapistProfile` 1:1 for therapist-only data.
 
-## Video infrastructure
-- **Daily.co free tier** — sufficient at launch volume
-- Test on Algerian mobile networks **before** committing (this is in §22 as an open assumption)
-- LiveKit considered if Daily.co cost grows past free tier
+## External integrations (MVP)
+- **Daily.co** for video — REST API to create rooms, JS embed in the session page.
+- **Resend** for transactional email — Python SDK, 3,000/mo free tier.
+- **Object storage** for receipt uploads — local disk in dev, S3-compat (Cloudflare R2) in prod, swappable via Django storage backend.
 
-## Tools and observability (free tiers preferred)
-- Sentry free tier for error tracking
-- Plausible / Umami / PostHog free tier for analytics
-- No paid CI/CD beyond GitHub Actions free minutes
+## Background jobs
+- **None at MVP.** All operations are synchronous in the request path.
+- Add **Django-Q2** (lighter than Celery) in Phase 2 when reminders / scheduled jobs arrive.
+
+## Tooling
+- **Tests:** pytest + pytest-django + factory_boy. Real Postgres in CI.
+- **Lint / format:** ruff + black. mypy deferred.
+- **CI:** GitHub Actions — lint + test on every PR.
+- **Errors:** Sentry free tier (sentry-sdk[django], 5k events/mo).
+- **Analytics:** deferred (Plausible / Umami / PostHog when needed).
+
+## Hosting
+- **Deferred.** Lock at deploy time. Candidates: Railway (simplest for Django + Postgres), Fly.io (more control, edge), self-hosted VPS (most control / lowest long-term cost).
+
+## Explicitly NOT in the stack (v1)
+- No Next.js / React / SPA frontend
+- No FastAPI (Django wins for this app shape)
+- No Redis
+- No WebSockets
+- No Celery
+- No Kubernetes
+- No React Native — PWA only at MVP and Phase 2
 
 ---
 
 # 14. System Architecture (High Level)
 
-> The v1 PRD listed 9 microservices. That was wildly over-engineered for the MVP. The architecture below is a single-monolith design with three external dependencies. It will scale to 10× our 18-month projected load on the cheapest tier.
+> Single Django monolith with three external dependencies in MVP. Will scale to 10× projected 18-month load on the cheapest tier.
 
 ## MVP architecture
-- **Single application** (Next.js + API routes, or Next.js frontend + FastAPI backend — pick one based on team skill)
-- **One PostgreSQL database**
-- **One transactional email provider** (Resend / Postmark)
-- **Daily.co** for video rooms (created on booking confirmation)
-- **No queue, no cache, no microservices**
+- **Single Django application** serving HTML (templates + HTMX) plus a small JSON surface for the Daily.co embed.
+- **One PostgreSQL database.**
+- **Daily.co** for video rooms (created on booking confirmation via REST).
+- **Resend** for transactional email.
+- **No queue, no cache, no microservices.**
 
-## Modules within the monolith
-- Authentication
-- Users
-- Therapists (profile, availability)
-- Bookings
-- Notifications (email-based)
-- Admin (founder tools)
+## Django apps (modules within the monolith)
+- `accounts` — user model, auth, role (end-user vs therapist), allauth integration
+- `therapists` — therapist profile, credentials, availability, payment instructions
+- `bookings` — booking lifecycle (request → accept → paid → confirmed → completed → no-show)
+- `notifications` — email send wrappers around Resend
+- (Django admin is built-in — no custom app needed for the founder ops dashboard)
 
-## Future architecture decisions (deferred)
-- Add a queue when we add background jobs (Phase 2: SMS reminders, calendar sync).
-- Add Redis when we add real-time messaging (Phase 2).
-- Split into services only when monolith scaling actually hurts (probably never within 24 months).
+## Future architecture (deferred)
+- Add **Django-Q2** worker when Phase 2 brings reminders / scheduled jobs.
+- Add **Redis** when Phase 2 introduces in-app messaging (real-time).
+- Object storage moves from local disk (dev) to **Cloudflare R2** (S3-compat) in production for receipt uploads.
+- Split into services? Probably never within 24 months.
 
 ---
 

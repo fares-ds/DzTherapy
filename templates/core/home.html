@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="space-y-8">
+    <section>
+        <h2 class="text-lg font-semibold mb-2">Skeleton smoke test</h2>
+        <p class="text-slate-600">
+            Si vous voyez ce style appliqué (fond clair, typographie sans-serif),
+            Tailwind est correctement chargé.
+        </p>
+    </section>
+
+    <section x-data="{ count: 0 }" class="rounded-md border border-slate-200 bg-white p-4">
+        <h3 class="font-medium mb-2">Alpine.js</h3>
+        <button
+            class="rounded bg-slate-900 px-3 py-1.5 text-sm text-white hover:bg-slate-700"
+            @click="count++"
+        >
+            Cliquer (<span x-text="count"></span>)
+        </button>
+    </section>
+
+    <section class="rounded-md border border-slate-200 bg-white p-4">
+        <h3 class="font-medium mb-2">HTMX</h3>
+        <button
+            class="rounded bg-slate-900 px-3 py-1.5 text-sm text-white hover:bg-slate-700"
+            hx-get="{% url 'core:htmx_demo' %}"
+            hx-swap="outerHTML"
+        >
+            Charger un partiel
+        </button>
+    </section>
+</div>
+{% endblock %}
