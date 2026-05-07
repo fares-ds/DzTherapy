@@ -7,6 +7,7 @@ from accounts.models import User, UserRole
 from therapists.models import (
     Availability,
     AvailabilityException,
+    Gender,
     TherapistProfile,
 )
 
@@ -35,6 +36,11 @@ class TherapistSignupForm(forms.Form):
         label=_("Langues parlées (séparées par des virgules)"),
         max_length=128,
         initial="Français",
+    )
+    gender = forms.ChoiceField(
+        label=_("Genre"),
+        choices=Gender.choices,
+        initial=Gender.OTHER,
     )
     payment_instructions = forms.CharField(
         label=_("Instructions de paiement (CCP / RIB / Edahabia)"),
@@ -79,6 +85,7 @@ class TherapistSignupForm(forms.Form):
             bio=data.get("bio", ""),
             specialties=data.get("specialties", ""),
             languages=data.get("languages", "Français"),
+            gender=data.get("gender", Gender.OTHER),
             payment_instructions=data.get("payment_instructions", ""),
             session_price_dzd=data["session_price_dzd"],
             session_duration_minutes=data["session_duration_minutes"],
@@ -95,6 +102,7 @@ class TherapistProfileForm(forms.ModelForm):
             "bio",
             "specialties",
             "languages",
+            "gender",
             "photo",
             "payment_instructions",
             "session_price_dzd",

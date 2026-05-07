@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "Mes réservations" %} — DzTherapy{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto space-y-6">
+    <h1 class="text-2xl font-semibold text-slate-900">{% trans "Mes réservations" %}</h1>
+
+    <section class="bg-white border border-slate-200 rounded-md p-6">
+        <h2 class="font-semibold text-slate-900 mb-4">{% trans "À venir" %}</h2>
+        {% if upcoming %}
+        <ul class="divide-y divide-slate-100">
+            {% for b in upcoming %}
+            <li class="py-3 flex items-start justify-between gap-4">
+                <div>
+                    <p class="font-medium text-slate-900">{{ b.therapist.full_name }}</p>
+                    <p class="text-sm text-slate-600">{{ b.slot_start|date:"l j F · H:i" }} → {{ b.slot_end|date:"H:i" }}</p>
+                    <span class="mt-1 inline-block rounded-full px-2 py-0.5 text-xs
+                        {% if b.state == 'pending_payment' %}bg-amber-50 text-amber-700
+                        {% elif b.state == 'awaiting_confirmation' %}bg-sky-50 text-sky-700
+                        {% elif b.state == 'confirmed' %}bg-emerald-50 text-emerald-700
+                        {% else %}bg-slate-100 text-slate-700{% endif %}">
+                        {{ b.get_state_display }}
+                    </span>
+                </div>
+                <div class="space-y-1 min-w-[160px] text-right">
+                    {% if b.state == 'confirmed' %}
+                    <a href="{% url 'bookings:session_room' booking_id=b.id %}" class="block text-xs rounded-md bg-emerald-600 text-white px-3 py-1.5 hover:bg-emerald-700">{% trans "Rejoindre la séance" %}</a>
+                    {% else %}
+                    <a href="{% url 'bookings:payment_instructions' booking_id=b.id %}" class="block text-xs rounded-md border border-slate-300 px-3 py-1.5 hover:bg-slate-50">{% trans "Détails / Paiement" %}</a>
+                    {% endif %}
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p class="text-sm text-slate-500">{% trans "Aucune séance à venir." %} <a href="{% url 'therapists:list' %}" class="underline">{% trans "Trouver un·e thérapeute" %}</a>.</p>
+        {% endif %}
+    </section>
+
+    <section class="bg-white border border-slate-200 rounded-md p-6">
+        <h2 class="font-semibold text-slate-900 mb-4">{% trans "Historique" %}</h2>
+        {% if past %}
+        <ul class="divide-y divide-slate-100">
+            {% for b in past %}
+            <li class="py-3 flex items-center justify-between gap-4 text-sm">
+                <div>
+                    <p class="font-medium text-slate-900">{{ b.therapist.full_name }}</p>
+                    <p class="text-slate-500">{{ b.slot_start|date:"j F Y · H:i" }}</p>
+                </div>
+                <span class="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-600">{{ b.get_state_display }}</span>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p class="text-sm text-slate-500">{% trans "Aucune séance passée." %}</p>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}

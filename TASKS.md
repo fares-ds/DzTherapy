@@ -40,24 +40,26 @@ Depends on Track A completion + H4/H5/H6.
 - **I3 — Soft launch — invite-only signups.** *acceptance: signup form gated by invite code; invite codes generated for therapists' existing patients; first 20 invitations sent.*
 - **I4 — Feedback loop set up.** *acceptance: post-session feedback form (email + in-app form); founder reviews weekly; issues land in Issues / Technical Debt below.*
 
-## Phase 2 / Deferred (post-MVP — do not start)
+## Phase 2 — Engagement (in flight)
 
-Each maps to PRD §7 deferrals.
+Per [PRD §20](algeria_mental_health_saas_prd.md). Pass 1 (search/filters, gender, anonymous mode, "Mon compte", "Mes réservations") shipped 2026-05-07 — see Done. Remaining passes:
 
-- In-app messaging
-- Voice notes
-- Search and filters (therapist directory)
-- Anonymous display name
-- Session notes / EMR-lite
-- Reviews and ratings
+- **In-app messaging** between user and therapist (likely needs Redis once real-time per PRD §14)
+- **Voice notes** (depends on messaging)
+- **Session notes / EMR-lite** for therapists — strengthens year-2 monetization hook
+- **Reviews and ratings** (cautiously — gameable at low volume)
+- **Arabic localization** (UI gettext + RTL)
+- **AI intake assistant** (optional per PRD §12)
+
+## Phase 3+ deferred
+
 - Wallet / recharge
-- AI intake assistant
-- Mobile app wrapper (Capacitor or Hotwire Native — see PRD §13)
-- Arabic localization
-- Therapist subscription billing (Phase 3 monetization)
+- Mobile app wrapper (Capacitor / Hotwire Native — PRD §13)
+- Therapist subscription billing (Phase 3 monetization, PRD §16)
 
 ## Done
 
+- **2026-05-07** — **Phase 2 Pass 1 — search, filters, anonymous mode, account settings, my-bookings**. Public therapist directory at `/therapeutes/` now has a sticky filter sidebar (search box, gender, language, max price) with HTMX-driven swap of just the result grid (no full reload). New `Gender` enum on `TherapistProfile` (PRD §8 cultural-adaptation gap closed) — both signup form and profile editor expose it. New `User.display_name` (optional, max 64) + `User.public_name` property; therapist booking inbox + patient list now show `public_name` with email below as secondary contact when display_name is set. New `/mon-compte/` page (`accounts.views.account_settings`) for end users to edit display name, with links to allauth's password-change and email-management views. New `/reservations/` page (`bookings.views.my_bookings`) listing upcoming + past bookings with state badges and contextual CTAs (join session / payment instructions). Header nav grows "Mes réservations" + "Mon compte" links for end users. Tests: 42 passing (up from 31) — covers search across all 4 filters, HTMX partial response, display_name persistence + public_name fallback, my_bookings past/upcoming split.
 - **2026-05-07** — **Security & production-readiness pass**. `django-ratelimit` decorators on `therapist_signup` (5/h per IP), `create_booking` / `mark_paid` / `cancel_booking` (20–30/h per user), plus allauth's built-in rate limits on login_failed / signup / send_email. WhiteNoise wired into MIDDLEWARE with `CompressedManifestStaticFilesStorage` in prod (gzip + brotli + content-hashed names) and `WHITENOISE_USE_FINDERS` in dev (no `collectstatic` needed). `ACCOUNT_EMAIL_VERIFICATION` is now env-driven, defaults to `optional` in DEBUG and `mandatory` in prod. Allauth templates (login, signup, logout, password_reset, password_reset_done, email_confirm) overridden with FR-styled cards extending `account/base.html`. Cross-user isolation tests added (therapist B cannot confirm/decline therapist A's bookings; end-user gets 403 on therapist dashboard; third-party gets 400 on session room). SVG favicon. New [DEPLOYMENT.md](DEPLOYMENT.md) covering hosting candidates, env-var matrix, build steps, periodic-job scheduling for `send_reminders` + `finalize_bookings`, Resend domain auth, Sentry verification, and a pre-launch checklist. Tests: 31 passing (up from 25).
 - **2026-05-07** — **Robustness pass — decline / cancel / reminders / finalize / receipt validation / slot-collision**. Therapist can now decline a booking from the inbox (HTMX swap) → patient gets a French email. User can self-cancel from the payment-instructions page while in `pending_payment` or `awaiting_confirmation` → therapist gets notified. Slot collisions are now blocked at the DB layer via a partial unique constraint (`unique_active_booking_slot`) and at the application layer via `select_for_update` inside an atomic block. Receipt uploads validate file type (JPG/PNG/GIF/WEBP/PDF) and size (≤5 MB) at form level. Two new periodic management commands: `python manage.py send_reminders` (T-24h, idempotent via `Booking.reminder_sent_at`) and `python manage.py finalize_bookings` (CONFIRMED → COMPLETED after `slot_end + grace`). 404/403 templates extend `base.html`; 500 is self-contained for safety. New `python manage.py seed_demo` creates 3 approved therapists + 1 patient so fresh installs aren't empty. Tests: 25 passing (up from 10) — covers all new transitions, validation rejection paths, slot-collision constraint at DB layer, and reminder idempotency.
 - **2026-05-07** — **Track G (admin/ops) + H1/H2/H3 (hardening)**. Therapist verification queue + booking moderation in Django admin (with bulk approve/reject and state actions). Founder dashboard view at `/admin/dztherapy/dashboard/` with weekly bookings, active therapists, completion rate, by-state breakdown. T&Cs (`/conditions/`) and Privacy (`/confidentialite/`) placeholder pages — flagged as not yet lawyer-reviewed. Booking-time disclaimer enforced via `BookingNotesForm.accept_disclaimer` (required checkbox). [RUNBOOK.md](RUNBOOK.md) with crisis-line numbers, verification incidents, payment disputes, Daily.co outage procedure, backup/restore notes.

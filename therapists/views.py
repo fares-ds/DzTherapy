@@ -5,6 +5,7 @@ from __future__ import annotations
 from django.contrib import messages
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
+from django.db.models import Q
 from django.http import HttpRequest, HttpResponse, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.translation import gettext_lazy as _
@@ -22,6 +23,7 @@ from therapists.forms import (
 from therapists.models import (
     Availability,
     AvailabilityException,
+    Gender,
     TherapistProfile,
     VerificationStatus,
 )
@@ -31,10 +33,48 @@ from therapists.services import get_available_slots
 
 
 def therapist_list(request: HttpRequest) -> HttpResponse:
-    therapists = TherapistProfile.objects.filter(
+    qs = TherapistProfile.objects.filter(
         verification_status=VerificationStatus.APPROVED
     ).select_related("user")
-    return render(request, "therapists/list.html", {"therapists": therapists})
+
+    # Free-text search across name + headline + bio + specialties.
+    # icontains is fine at MVP volume; switch to Postgres FTS later if needed.
+    q = (request.GET.get("q") or "").strip()
+    if q:
+        qs = qs.filter(
+            Q(full_name__icontains=q)
+            | Q(headline__icontains=q)
+            | Q(bio__icontains=q)
+            | Q(specialties__icontains=q)
+        )
+
+    gender = (request.GET.get("gender") or "").strip()
+    if gender in {Gender.FEMALE, Gender.MALE, Gender.NON_BINARY}:
+        qs = qs.filter(gender=gender)
+
+    language = (request.GET.get("language") or "").strip()
+    if language:
+        qs = qs.filter(languages__icontains=language)
+
+    max_price_raw = (request.GET.get("max_price") or "").strip()
+    max_price = int(max_price_raw) if max_price_raw.isdigit() else None
+    if max_price is not None:
+        qs = qs.filter(session_price_dzd__lte=max_price)
+
+    context = {
+        "therapists": qs,
+        "filters": {
+            "q": q,
+            "gender": gender,
+            "language": language,
+            "max_price": max_price_raw,
+        },
+        "gender_choices": Gender.choices,
+    }
+    # HTMX-driven filter form swaps just the result grid.
+    if request.headers.get("HX-Request") == "true":
+        return render(request, "therapists/_list_results_partial.html", context)
+    return render(request, "therapists/list.html", context)
 
 
 def therapist_detail(request: HttpRequest, slug: str) -> HttpResponse:

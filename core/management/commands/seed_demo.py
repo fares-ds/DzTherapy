@@ -29,6 +29,7 @@ DEMO_THERAPISTS = [
         ),
         "specialties": "Anxiété, Burnout, Transitions de vie",
         "languages": "Français, Arabe",
+        "gender": "female",
         "payment_instructions": (
             "CCP : 0000 1234 5678\nÀ régler avant le rendez-vous puis cliquer "
             "« J'ai effectué le paiement »."
@@ -46,6 +47,7 @@ DEMO_THERAPISTS = [
         ),
         "specialties": "Couple, Communication, Conflits familiaux",
         "languages": "Français, Arabe, Tamazight",
+        "gender": "male",
         "payment_instructions": "Edahabia : 6300 0000 0000 0000",
         "session_price_dzd": 3000,
         "availability": [(1, time(10), time(13)), (3, time(15), time(19))],
@@ -61,6 +63,7 @@ DEMO_THERAPISTS = [
         ),
         "specialties": "TCC, Dépression, Sommeil",
         "languages": "Français",
+        "gender": "female",
         "payment_instructions": "RIB BNA : à demander en première séance",
         "session_price_dzd": 3500,
         "availability": [(4, time(9), time(13))],
@@ -91,6 +94,7 @@ class Command(BaseCommand):
                     "bio": spec["bio"],
                     "specialties": spec["specialties"],
                     "languages": spec["languages"],
+                    "gender": spec.get("gender", "other"),
                     "payment_instructions": spec["payment_instructions"],
                     "session_price_dzd": spec["session_price_dzd"],
                     "verification_status": VerificationStatus.APPROVED,

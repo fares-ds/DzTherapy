@@ -22,6 +22,13 @@ class VerificationStatus(models.TextChoices):
     REJECTED = "rejected", _("Rejeté")
 
 
+class Gender(models.TextChoices):
+    FEMALE = "female", _("Femme")
+    MALE = "male", _("Homme")
+    NON_BINARY = "non_binary", _("Non binaire")
+    OTHER = "other", _("Préfère ne pas préciser")
+
+
 class TherapistProfile(models.Model):
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
@@ -52,6 +59,17 @@ class TherapistProfile(models.Model):
     )
     photo = models.ImageField(
         _("photo"), upload_to="therapists/", blank=True, null=True
+    )
+    gender = models.CharField(
+        _("genre"),
+        max_length=16,
+        choices=Gender.choices,
+        default=Gender.OTHER,
+        blank=True,
+        help_text=_(
+            "Permet aux patient·e·s qui le souhaitent de filtrer "
+            "par préférence de genre (PRD §8 cultural adaptation)."
+        ),
     )
     payment_instructions = models.TextField(
         _("instructions de paiement"),

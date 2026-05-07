@@ -19,7 +19,8 @@
             {% for p in patients %}
             <li class="py-3 flex items-center justify-between">
                 <div>
-                    <p class="font-medium text-slate-900">{{ p.user.email }}</p>
+                    <p class="font-medium text-slate-900">{{ p.user.public_name }}</p>
+                    {% if p.user.display_name %}<p class="text-xs text-slate-500">{{ p.user.email }}</p>{% endif %}
                     <p class="text-xs text-slate-500">{% blocktrans count count=p.session_count %}{{ count }} séance{% plural %}{{ count }} séances{% endblocktrans %}</p>
                 </div>
                 <p class="text-xs text-slate-500">

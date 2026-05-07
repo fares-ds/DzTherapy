@@ -16,6 +16,15 @@ class User(AbstractUser):
         choices=UserRole.choices,
         default=UserRole.END_USER,
     )
+    display_name = models.CharField(
+        _("nom affiché"),
+        max_length=64,
+        blank=True,
+        help_text=_(
+            "Optionnel. Si renseigné, ce nom apparaîtra à la place de votre "
+            "adresse e-mail dans les boîtes de réception des thérapeutes."
+        ),
+    )
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["username"]
@@ -34,3 +43,8 @@ class User(AbstractUser):
     @property
     def is_end_user(self) -> bool:
         return self.role == UserRole.END_USER
+
+    @property
+    def public_name(self) -> str:
+        """Display-name when set, falls back to email. Used in inbox & lists."""
+        return self.display_name or self.email

@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "Mon compte" %} — DzTherapy{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto space-y-4">
+    <h1 class="text-2xl font-semibold text-slate-900 mb-2">{% trans "Mon compte" %}</h1>
+
+    <section class="bg-white border border-slate-200 rounded-md p-6 auth-form">
+        <h2 class="font-semibold text-slate-900 mb-3">{% trans "Préférences" %}</h2>
+        <form method="post" class="space-y-4">
+            {% csrf_token %}
+            {% for field in form %}
+            <div>
+                <label class="block text-sm font-medium text-slate-700">{{ field.label }}</label>
+                {{ field }}
+                {% if field.help_text %}<p class="mt-1 text-xs text-slate-500">{{ field.help_text }}</p>{% endif %}
+                {% for error in field.errors %}<p class="mt-1 text-sm text-red-600">{{ error }}</p>{% endfor %}
+            </div>
+            {% endfor %}
+            <button type="submit">{% trans "Enregistrer" %}</button>
+        </form>
+    </section>
+
+    <section class="bg-white border border-slate-200 rounded-md p-6">
+        <h2 class="font-semibold text-slate-900 mb-3">{% trans "Sécurité" %}</h2>
+        <ul class="text-sm space-y-2">
+            <li><a href="{% url 'account_change_password' %}" class="text-slate-700 hover:text-slate-900 underline">{% trans "Changer le mot de passe" %}</a></li>
+            <li><a href="{% url 'account_email' %}" class="text-slate-700 hover:text-slate-900 underline">{% trans "Adresses e-mail" %}</a></li>
+        </ul>
+    </section>
+
+    <section class="bg-white border border-slate-200 rounded-md p-6">
+        <h2 class="font-semibold text-slate-900 mb-3">{% trans "Mes données" %}</h2>
+        <p class="text-sm text-slate-600">
+            {% trans "Pour supprimer votre compte, écrivez-nous à" %}
+            <a class="underline" href="mailto:privacy@dztherapy.example">privacy@dztherapy.example</a>.
+            {% trans "Nous traiterons votre demande sous 30 jours conformément à la loi 18-07." %}
+        </p>
+    </section>
+</div>
+{% include "account/_form_styles.html" %}
+{% endblock %}

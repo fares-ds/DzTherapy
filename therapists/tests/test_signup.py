@@ -18,6 +18,7 @@ def test_therapist_signup_creates_pending_profile(client):
             "bio": "Spécialisé dans l'accompagnement des jeunes professionnel·le·s.",
             "specialties": "Anxiété, Burnout",
             "languages": "Français, Arabe",
+            "gender": "male",
             "payment_instructions": "CCP : 0000 1234",
             "session_price_dzd": 3000,
             "session_duration_minutes": 60,

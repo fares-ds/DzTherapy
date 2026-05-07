@@ -170,6 +170,29 @@ def cancel_booking(request: HttpRequest, booking_id) -> HttpResponse:
 
 
 @login_required
+def my_bookings(request: HttpRequest) -> HttpResponse:
+    """Patient overview of past + upcoming bookings."""
+    now = timezone.now()
+    qs = (
+        Booking.objects.filter(user=request.user)
+        .select_related("therapist", "therapist__user")
+        .order_by("-slot_start")
+    )
+    upcoming, past = [], []
+    for booking in qs:
+        if booking.slot_start >= now and booking.state in ACTIVE_STATES:
+            upcoming.append(booking)
+        else:
+            past.append(booking)
+    upcoming.reverse()  # earliest upcoming first
+    return render(
+        request,
+        "bookings/my_bookings.html",
+        {"upcoming": upcoming, "past": past, "states": BookingState},
+    )
+
+
+@login_required
 def session_room(request: HttpRequest, booking_id) -> HttpResponse:
     # Both the patient and the therapist can access their own session.
     booking = get_object_or_404(Booking, id=booking_id)

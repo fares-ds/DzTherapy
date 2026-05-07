@@ -1,0 +1,34 @@
+{% load i18n %}
+{% if therapists %}
+<div class="grid gap-4 sm:grid-cols-2">
+    {% for t in therapists %}
+    <a href="{{ t.get_absolute_url }}" class="block rounded-md border border-slate-200 bg-white p-5 hover:border-slate-400 transition">
+        <div class="flex gap-4">
+            {% if t.photo %}
+            <img src="{{ t.photo.url }}" alt="" class="h-16 w-16 rounded-full object-cover">
+            {% else %}
+            <div class="h-16 w-16 rounded-full bg-slate-200 grid place-items-center text-slate-500 text-xl font-semibold">
+                {{ t.full_name|slice:":1" }}
+            </div>
+            {% endif %}
+            <div class="flex-1">
+                <h2 class="font-semibold text-slate-900">{{ t.full_name }}</h2>
+                {% if t.headline %}<p class="text-sm text-slate-600">{{ t.headline }}</p>{% endif %}
+                <p class="mt-2 text-xs text-slate-500">
+                    {% if t.specialties_list %}{{ t.specialties }} · {% endif %}{{ t.languages }}
+                </p>
+                <p class="mt-2 text-sm font-medium text-slate-900">{{ t.session_price_dzd }} DZD <span class="text-slate-500 font-normal">/ {{ t.session_duration_minutes }} min</span></p>
+            </div>
+        </div>
+    </a>
+    {% endfor %}
+</div>
+<p class="mt-4 text-xs text-slate-500">
+    {% blocktrans count count=therapists|length %}{{ count }} thérapeute trouvé{% plural %}{{ count }} thérapeutes trouvé·e·s{% endblocktrans %}
+</p>
+{% else %}
+<div class="rounded-md border border-dashed border-slate-300 bg-white p-8 text-center text-slate-600">
+    <p>{% trans "Aucun·e thérapeute ne correspond à ces critères." %}</p>
+    <p class="mt-1 text-sm">{% trans "Essayez d'élargir vos filtres." %}</p>
+</div>
+{% endif %}

@@ -10,6 +10,7 @@ urlpatterns = [
     path("admin/dztherapy/dashboard/", founder_dashboard, name="founder_dashboard"),
     path("admin/", admin.site.urls),
     path("accounts/", include("allauth.urls")),
+    path("mon-compte/", include("accounts.urls")),
     path("therapeutes/", include("therapists.urls")),
     path("reservations/", include("bookings.urls")),
     path("", include("core.urls")),

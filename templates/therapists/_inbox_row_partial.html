@@ -1,7 +1,10 @@
 {% load i18n %}
 <li id="booking-{{ booking.id }}" class="py-4 flex items-start justify-between gap-4">
     <div class="flex-1">
-        <p class="font-medium text-slate-900">{{ booking.user.email }}</p>
+        <p class="font-medium text-slate-900">{{ booking.user.public_name }}</p>
+        {% if booking.user.display_name %}
+        <p class="text-xs text-slate-500">{{ booking.user.email }}</p>
+        {% endif %}
         <p class="text-sm text-slate-600">
             {{ booking.slot_start|date:"l j F · H:i" }} → {{ booking.slot_end|date:"H:i" }}
         </p>
