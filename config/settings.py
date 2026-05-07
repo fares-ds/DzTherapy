@@ -43,6 +43,9 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    # WhiteNoise must be immediately after SecurityMiddleware to serve static
+    # files from STATIC_ROOT in production. No-op in dev (Django handles static).
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.locale.LocaleMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -102,6 +105,22 @@ USE_TZ = True
 STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_DIRS = [BASE_DIR / "assets"]
+# In dev WhiteNoise uses staticfiles finders directly (no collectstatic needed).
+WHITENOISE_USE_FINDERS = DEBUG
+WHITENOISE_AUTOREFRESH = DEBUG
+# WhiteNoise: compressed + manifest-hashed names in prod for long-cache + cache-bust.
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": (
+            "whitenoise.storage.CompressedManifestStaticFilesStorage"
+            if not DEBUG
+            else "django.contrib.staticfiles.storage.StaticFilesStorage"
+        ),
+    },
+}
 
 MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"
@@ -115,8 +134,18 @@ TAILWIND_CLI_SRC_CSS = BASE_DIR / "tailwind" / "input.css"
 SITE_ID = 1
 ACCOUNT_LOGIN_METHODS = {"email"}
 ACCOUNT_SIGNUP_FIELDS = ["email*", "password1*", "password2*"]
-ACCOUNT_EMAIL_VERIFICATION = "optional"
+# Default: optional in dev (frictionless), mandatory in prod. Override per-env.
+ACCOUNT_EMAIL_VERIFICATION = env(
+    "ACCOUNT_EMAIL_VERIFICATION",
+    default="optional" if DEBUG else "mandatory",
+)
 ACCOUNT_UNIQUE_EMAIL = True
+ACCOUNT_RATE_LIMITS = {
+    # allauth's built-in rate limiting — pair with django-ratelimit on our views.
+    "login_failed": "5/5m",
+    "signup": "10/h",
+    "send_email": "5/5m",
+}
 ACCOUNT_USER_MODEL_USERNAME_FIELD = "username"
 ACCOUNT_DEFAULT_HTTP_PROTOCOL = "http" if DEBUG else "https"
 LOGIN_REDIRECT_URL = "/"

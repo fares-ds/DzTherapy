@@ -17,6 +17,8 @@ dependencies = [
     "django-allauth>=65.0",
     "pillow>=11.0",
     "requests>=2.32",
+    "django-ratelimit>=4.1",
+    "whitenoise>=6.7",
 ]
 
 [project.optional-dependencies]

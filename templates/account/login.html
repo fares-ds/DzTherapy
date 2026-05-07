@@ -1,0 +1,31 @@
+{% extends "account/base.html" %}
+{% load i18n %}
+{% load account %}
+
+{% block title %}{% trans "Connexion" %} — DzTherapy{% endblock %}
+
+{% block content %}
+<div class="max-w-md mx-auto bg-white border border-slate-200 rounded-md p-6 sm:p-8 auth-form">
+    <h1 class="text-2xl font-semibold text-slate-900 mb-1">{% trans "Connexion" %}</h1>
+    <p class="text-slate-600 text-sm mb-5">
+        {% trans "Pas encore de compte ?" %}
+        <a href="{% url 'account_signup' %}" class="text-slate-900 underline">{% trans "Créer un compte" %}</a>
+    </p>
+
+    <form method="post" action="{% url 'account_login' %}">
+        {% csrf_token %}
+        {{ form.as_p }}
+        {% if redirect_field_value %}
+        <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}">
+        {% endif %}
+        <button type="submit">{% trans "Se connecter" %}</button>
+    </form>
+
+    <p class="mt-4 text-sm">
+        <a href="{% url 'account_reset_password' %}" class="text-slate-600 hover:text-slate-900">
+            {% trans "Mot de passe oublié ?" %}
+        </a>
+    </p>
+</div>
+{% include "account/_form_styles.html" %}
+{% endblock %}

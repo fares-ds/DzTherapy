@@ -1,0 +1,22 @@
+{% extends "account/base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Déconnexion" %} — DzTherapy{% endblock %}
+
+{% block content %}
+<div class="max-w-md mx-auto bg-white border border-slate-200 rounded-md p-6 sm:p-8 auth-form">
+    <h1 class="text-2xl font-semibold text-slate-900 mb-2">{% trans "Confirmer la déconnexion" %}</h1>
+    <p class="text-slate-600 text-sm mb-5">
+        {% trans "Voulez-vous vraiment vous déconnecter ?" %}
+    </p>
+
+    <form method="post" action="{% url 'account_logout' %}">
+        {% csrf_token %}
+        {% if redirect_field_value %}
+        <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}">
+        {% endif %}
+        <button type="submit">{% trans "Se déconnecter" %}</button>
+    </form>
+</div>
+{% include "account/_form_styles.html" %}
+{% endblock %}

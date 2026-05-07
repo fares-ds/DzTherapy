@@ -12,6 +12,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.views.decorators.http import require_POST
+from django_ratelimit.decorators import ratelimit
 
 from bookings import services as booking_services
 from bookings.forms import BookingNotesForm, MarkPaidForm
@@ -39,6 +40,7 @@ def _parse_iso_slot(raw: str) -> datetime | None:
 
 
 @login_required
+@ratelimit(key="user", rate="20/h", method="POST", block=True)
 def create_booking(request: HttpRequest, therapist_slug: str) -> HttpResponse:
     therapist = _get_approved_therapist(therapist_slug)
     if request.user.is_therapist:
@@ -117,6 +119,7 @@ def payment_instructions(request: HttpRequest, booking_id) -> HttpResponse:
 
 
 @login_required
+@ratelimit(key="user", rate="30/h", method="POST", block=True)
 def mark_paid(request: HttpRequest, booking_id) -> HttpResponse:
     booking = _booking_for_user(request, booking_id)
     if booking.state != BookingState.PENDING_PAYMENT:
@@ -148,6 +151,7 @@ def mark_paid(request: HttpRequest, booking_id) -> HttpResponse:
 
 @login_required
 @require_POST
+@ratelimit(key="user", rate="20/h", method="POST", block=True)
 def cancel_booking(request: HttpRequest, booking_id) -> HttpResponse:
     """User cancels their own booking. Allowed only before the therapist confirms."""
     booking = _booking_for_user(request, booking_id)

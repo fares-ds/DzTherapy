@@ -9,6 +9,7 @@ from django.http import HttpRequest, HttpResponse, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.translation import gettext_lazy as _
 from django.views.decorators.http import require_POST
+from django_ratelimit.decorators import ratelimit
 
 from bookings import services as booking_services
 from bookings.models import ACTIVE_STATES, Booking, BookingState
@@ -53,6 +54,7 @@ def therapist_detail(request: HttpRequest, slug: str) -> HttpResponse:
 # Signup ----------------------------------------------------------------
 
 
+@ratelimit(key="ip", rate="5/h", method="POST", block=True)
 def therapist_signup(request: HttpRequest) -> HttpResponse:
     if request.user.is_authenticated:
         return redirect("therapists:profile_editor")

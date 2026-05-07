@@ -1,0 +1,30 @@
+{% extends "account/base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "S'inscrire" %} — DzTherapy{% endblock %}
+
+{% block content %}
+<div class="max-w-md mx-auto bg-white border border-slate-200 rounded-md p-6 sm:p-8 auth-form">
+    <h1 class="text-2xl font-semibold text-slate-900 mb-1">{% trans "Créer un compte" %}</h1>
+    <p class="text-slate-600 text-sm mb-5">
+        {% trans "Vous êtes thérapeute ?" %}
+        <a href="{% url 'therapists:signup' %}" class="text-slate-900 underline">{% trans "Inscription thérapeute" %}</a>
+    </p>
+
+    <form method="post" action="{% url 'account_signup' %}">
+        {% csrf_token %}
+        {{ form.as_p }}
+        {% if redirect_field_value %}
+        <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}">
+        {% endif %}
+        <button type="submit">{% trans "S'inscrire" %}</button>
+    </form>
+
+    <p class="mt-4 text-sm">
+        <a href="{% url 'account_login' %}" class="text-slate-600 hover:text-slate-900">
+            {% trans "Déjà un compte ? Se connecter" %}
+        </a>
+    </p>
+</div>
+{% include "account/_form_styles.html" %}
+{% endblock %}
