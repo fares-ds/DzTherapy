@@ -52,7 +52,14 @@
                     <p class="font-medium text-slate-900">{{ b.therapist.full_name }}</p>
                     <p class="text-slate-500">{{ b.slot_start|date:"j F Y · H:i" }}</p>
                 </div>
-                <span class="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-600">{{ b.get_state_display }}</span>
+                <div class="flex items-center gap-3">
+                    <span class="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-600">{{ b.get_state_display }}</span>
+                    {% if b.state == 'completed' and not b.review %}
+                    <a href="{% url 'bookings:leave_review' booking_id=b.id %}" class="text-xs text-slate-700 hover:text-slate-900 underline">{% trans "Laisser un avis" %}</a>
+                    {% elif b.review %}
+                    <span class="text-xs text-amber-600">{{ b.review.rating }}★</span>
+                    {% endif %}
+                </div>
             </li>
             {% endfor %}
         </ul>

@@ -13,7 +13,7 @@ from django.views.decorators.http import require_POST
 from django_ratelimit.decorators import ratelimit
 
 from bookings import services as booking_services
-from bookings.models import ACTIVE_STATES, Booking, BookingState
+from bookings.models import ACTIVE_STATES, Booking, BookingState, SessionNote
 from therapists.forms import (
     AvailabilityExceptionForm,
     AvailabilityForm,
@@ -270,6 +270,33 @@ def decline_booking(request: HttpRequest, booking_id) -> HttpResponse:
 
 
 # Patient list (D6) -----------------------------------------------------
+
+
+@_therapist_required
+def session_note_editor(request: HttpRequest, booking_id) -> HttpResponse:
+    """Therapist-private clinical note attached to a single booking."""
+    booking = get_object_or_404(
+        Booking.objects.select_related("user", "session_note"),
+        id=booking_id,
+        therapist=request.therapist_profile,
+    )
+    note, _created = SessionNote.objects.get_or_create(booking=booking)
+    if request.method == "POST":
+        note.body = request.POST.get("body", "")[:20000]
+        note.save()
+        messages.success(request, _("Notes enregistrées."))
+        if request.headers.get("HX-Request"):
+            return render(
+                request,
+                "therapists/_session_note_partial.html",
+                {"booking": booking, "note": note, "saved": True},
+            )
+        return redirect("therapists:session_note_editor", booking_id=booking.id)
+    return render(
+        request,
+        "therapists/session_note_editor.html",
+        {"booking": booking, "note": note},
+    )
 
 
 @_therapist_required

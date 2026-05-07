@@ -2,7 +2,7 @@ from django import forms
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 
-from bookings.models import Booking
+from bookings.models import Booking, Review
 
 
 class BookingNotesForm(forms.ModelForm):
@@ -63,3 +63,24 @@ class MarkPaidForm(forms.ModelForm):
                 _("Format non supporté. Utilisez JPG, PNG, GIF, WEBP ou PDF.")
             )
         return receipt
+
+
+class ReviewForm(forms.ModelForm):
+    class Meta:
+        model = Review
+        fields = ("rating", "comment")
+        widgets = {
+            "rating": forms.RadioSelect,
+            "comment": forms.Textarea(
+                attrs={
+                    "rows": 4,
+                    "placeholder": _(
+                        "Optionnel — qu'avez-vous apprécié ? Aidez les futur·e·s patient·e·s."
+                    ),
+                }
+            ),
+        }
+        labels = {
+            "rating": _("Votre note"),
+            "comment": _("Commentaire (optionnel)"),
+        }

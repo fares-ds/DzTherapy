@@ -55,5 +55,10 @@
             {% trans "Rejoindre la séance" %}
         </a>
         {% endif %}
+        {% if booking.state == 'confirmed' or booking.state == 'completed' %}
+        <a href="{% url 'therapists:session_note_editor' booking_id=booking.id %}" class="block text-xs text-slate-500 hover:text-slate-700">
+            {% trans "Notes" %}
+        </a>
+        {% endif %}
     </div>
 </li>

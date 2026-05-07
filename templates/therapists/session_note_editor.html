@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "Notes de séance" %} — DzTherapy{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto space-y-4">
+    <a href="{% url 'therapists:booking_inbox' %}" class="text-sm text-slate-600 hover:text-slate-900">← {% trans "Retour à la boîte" %}</a>
+
+    <div class="bg-white border border-slate-200 rounded-md p-6">
+        <h1 class="text-xl font-semibold text-slate-900 mb-1">{% trans "Notes de séance" %}</h1>
+        <p class="text-sm text-slate-600 mb-1">
+            {% trans "Avec" %} <strong>{{ booking.user.public_name }}</strong>
+            · {{ booking.slot_start|date:"l j F · H:i" }}
+        </p>
+        <p class="text-xs text-slate-500 mb-5">
+            {% trans "Privées : visibles par vous uniquement, jamais partagées avec le ou la patient·e." %}
+        </p>
+
+        <div id="note-form">
+            {% include "therapists/_session_note_partial.html" %}
+        </div>
+    </div>
+</div>
+{% endblock %}

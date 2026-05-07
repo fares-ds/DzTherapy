@@ -84,7 +84,13 @@ class Message(models.Model):
         on_delete=models.CASCADE,
         related_name="sent_messages",
     )
-    body = models.TextField(_("contenu"))
+    body = models.TextField(_("contenu"), blank=True)
+    voice_note = models.FileField(
+        _("note vocale"),
+        upload_to="voice_notes/%Y/%m/",
+        blank=True,
+        null=True,
+    )
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     notified_at = models.DateTimeField(null=True, blank=True)
 
@@ -95,4 +101,8 @@ class Message(models.Model):
 
     def __str__(self) -> str:
         preview = (self.body[:60] + "…") if len(self.body) > 60 else self.body
-        return f"{self.sender.email}: {preview}"
+        return f"{self.sender.email}: {preview or '[voice]'}"
+
+    @property
+    def has_voice(self) -> bool:
+        return bool(self.voice_note)

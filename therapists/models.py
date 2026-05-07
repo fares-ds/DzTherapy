@@ -130,6 +130,15 @@ class TherapistProfile(models.Model):
     def languages_list(self) -> list[str]:
         return [s.strip() for s in self.languages.split(",") if s.strip()]
 
+    def rating_summary(self) -> dict:
+        """Average + count across this therapist's reviews. Cheap aggregate."""
+        from django.db.models import Avg, Count
+
+        agg = self.bookings.filter(review__isnull=False).aggregate(
+            avg=Avg("review__rating"), n=Count("review")
+        )
+        return {"avg": agg["avg"], "count": agg["n"] or 0}
+
 
 class Availability(models.Model):
     """A recurring weekly time-window during which the therapist accepts bookings.

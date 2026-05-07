@@ -2,8 +2,11 @@
 
 from __future__ import annotations
 
+import logging
 from datetime import timedelta
 
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
 from django.core.exceptions import PermissionDenied
 from django.utils import timezone
 
@@ -12,6 +15,8 @@ from bookings.models import Booking
 from messaging.models import Conversation, Message
 from notifications import email as notify
 from therapists.models import TherapistProfile, VerificationStatus
+
+log = logging.getLogger(__name__)
 
 # If the recipient was online inside this window, skip the email — they'll
 # see the message in-app on next render. Avoids notification spam during
@@ -45,22 +50,44 @@ def get_or_create_conversation_for_therapist(
     return convo
 
 
-def post_message(*, conversation: Conversation, sender, body: str) -> Message:
-    """Persist a message and notify the recipient if they've been away."""
+def post_message(
+    *, conversation: Conversation, sender, body: str = "", voice_note=None
+) -> Message:
+    """Persist a message (text and/or voice) and notify the recipient if away."""
     if not conversation.includes(sender):
         raise PermissionDenied("Sender is not a participant in this conversation.")
-    body = body.strip()
-    if not body:
+    body = (body or "").strip()
+    if not body and not voice_note:
         raise ValueError("Empty messages are not allowed.")
     message = Message.objects.create(
-        conversation=conversation, sender=sender, body=body
+        conversation=conversation, sender=sender, body=body, voice_note=voice_note
     )
     now = timezone.now()
     conversation.last_message_at = now
     conversation.save(update_fields=["last_message_at"])
 
+    _broadcast(message)
     _maybe_notify(message)
     return message
+
+
+def _broadcast(message: Message) -> None:
+    """Push a `chat.new` event onto the conversation's channel-layer group.
+
+    Connected WebSocket clients pick this up and refresh their thread.
+    Failures (e.g. Redis temporarily unreachable) are logged and swallowed
+    so the HTTP response still succeeds — fallback is the existing 5s poll.
+    """
+    layer = get_channel_layer()
+    if layer is None:
+        return
+    try:
+        async_to_sync(layer.group_send)(
+            f"chat-{message.conversation_id}",
+            {"type": "chat.new", "message_id": str(message.id)},
+        )
+    except Exception:
+        log.exception("Channel-layer broadcast failed for message %s", message.id)
 
 
 def mark_seen(*, conversation: Conversation, viewer) -> None:

@@ -1,0 +1,20 @@
+{% load i18n %}
+<form method="post"
+      action="{% url 'therapists:session_note_editor' booking_id=booking.id %}"
+      hx-post="{% url 'therapists:session_note_editor' booking_id=booking.id %}"
+      hx-target="#note-form"
+      hx-swap="innerHTML">
+    {% csrf_token %}
+    <textarea name="body" rows="12"
+              class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm font-mono"
+              placeholder="{% trans 'Observations, prochaine séance, points à suivre…' %}">{{ note.body }}</textarea>
+    <div class="mt-3 flex items-center justify-between">
+        <p class="text-xs text-slate-500">
+            {% if note.updated_at %}{% trans "Dernière sauvegarde" %} : {{ note.updated_at|date:"j F · H:i" }}{% endif %}
+            {% if saved %} · <span class="text-emerald-700">{% trans "Enregistré" %} ✓</span>{% endif %}
+        </p>
+        <button type="submit" class="rounded-md bg-slate-900 px-4 py-2 text-sm text-white hover:bg-slate-700">
+            {% trans "Enregistrer" %}
+        </button>
+    </div>
+</form>

@@ -1,0 +1,50 @@
+{% load i18n %}
+<div class="bg-white border border-slate-200 rounded-md p-4 sm:p-5">
+    <ul class="space-y-3">
+        {% for m in messages %}
+        <li class="flex {% if m.role == 'user' %}justify-end{% endif %}">
+            <div class="max-w-[85%] rounded-lg px-3 py-2 text-sm whitespace-pre-line
+                {% if m.role == 'user' %}bg-slate-900 text-white{% else %}bg-accent-100 text-slate-900{% endif %}">
+                {{ m.content }}
+            </div>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+
+{% if recommended %}
+<div class="mt-4 bg-white border border-emerald-200 rounded-md p-4">
+    <p class="text-sm font-semibold text-slate-900 mb-2">{% trans "Profils suggérés" %}</p>
+    <ul class="space-y-2">
+        {% for t in recommended %}
+        <li class="flex items-center justify-between gap-3">
+            <div>
+                <p class="font-medium text-slate-900">{{ t.full_name }}</p>
+                <p class="text-xs text-slate-600">{{ t.headline|default:t.specialties }}</p>
+            </div>
+            <a href="{{ t.get_absolute_url }}" class="text-xs rounded-md bg-slate-900 text-white px-3 py-1.5 hover:bg-slate-700">
+                {% trans "Voir le profil" %}
+            </a>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+
+<form method="post"
+      action="{% url 'intake:reply' session_id=session.id %}"
+      hx-post="{% url 'intake:reply' session_id=session.id %}"
+      hx-target="#intake-thread"
+      hx-swap="innerHTML"
+      hx-on::after-request="if(event.detail.successful) this.reset()"
+      class="mt-4 bg-white border border-slate-200 rounded-md p-3">
+    {% csrf_token %}
+    <textarea name="body" rows="3" autofocus
+              class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+              placeholder="{% trans 'Votre réponse…' %}"></textarea>
+    <div class="mt-2 flex justify-end">
+        <button type="submit" class="rounded-md bg-slate-900 px-4 py-2 text-sm text-white hover:bg-slate-700">
+            {% trans "Envoyer" %}
+        </button>
+    </div>
+</form>

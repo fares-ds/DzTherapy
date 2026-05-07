@@ -40,16 +40,9 @@ Depends on Track A completion + H4/H5/H6.
 - **I3 — Soft launch — invite-only signups.** *acceptance: signup form gated by invite code; invite codes generated for therapists' existing patients; first 20 invitations sent.*
 - **I4 — Feedback loop set up.** *acceptance: post-session feedback form (email + in-app form); founder reviews weekly; issues land in Issues / Technical Debt below.*
 
-## Phase 2 — Engagement (in flight)
+## Phase 2 — Engagement
 
-Per [PRD §20](algeria_mental_health_saas_prd.md). Passes 1 + 2 shipped 2026-05-07 — see Done. Remaining passes:
-
-- **Voice notes** (depends on messaging — extends `Message` with an audio file field)
-- **Session notes / EMR-lite** for therapists — strengthens year-2 monetization hook
-- **Reviews and ratings** (cautiously — gameable at low volume)
-- **Arabic localization** (UI gettext + RTL)
-- **AI intake assistant** (optional per PRD §12)
-- **Real-time messaging** (Redis + WebSockets to replace 5s HTMX polling — PRD §14; defer until polling pressure justifies it)
+**Phase 2 complete** (all passes shipped 2026-05-07). See Done section below.
 
 ## Phase 3+ deferred
 
@@ -58,6 +51,16 @@ Per [PRD §20](algeria_mental_health_saas_prd.md). Passes 1 + 2 shipped 2026-05-
 - Therapist subscription billing (Phase 3 monetization, PRD §16)
 
 ## Done
+
+- **2026-05-07** — **Phase 2 Passes 3–7 + Real-time messaging (one bundled push)**. Six features shipped together since they all extend the existing engagement layer:
+  - **Pass 3 — Voice notes**: `Message.voice_note` `FileField` + form validation (10 MB cap, audio mime-type allowlist). Browser MediaRecorder JS records via mic, drops the blob into the file input, then submits as multipart. Audio renders inline via `<audio controls>` in the thread partial. Falls back to plain file upload when MediaRecorder isn't available.
+  - **Pass 4 — Session notes / EMR-lite**: `bookings.SessionNote` (one per booking), therapist-private. Editor at `/therapeutes/dashboard/sessions/<uuid>/notes/` with HTMX inline save. "Notes" link added to inbox rows for confirmed/completed bookings.
+  - **Pass 5 — Reviews & ratings**: `bookings.Review` (1–5 stars + optional comment, one per booking, gated to `COMPLETED`). Average + count rendered on therapist detail page (per PRD §10 cautious framing — averages, no individual review prose). "Laisser un avis" CTA on Mes Réservations after completion.
+  - **Pass 6 — Arabic localization**: Added AR to `LANGUAGES`, generated `locale/{fr,ar}/LC_MESSAGES/django.{po,mo}`, populated 44 highest-traffic AR strings (nav, CTAs, status, page titles). `<html lang dir>` flips automatically via `LocaleMiddleware`. Footer language switcher posts to Django's built-in `set_language` view. Strings without an AR translation fall back to French at render time (no broken UI).
+  - **Pass 7 — AI intake assistant**: New `intake` app with `IntakeSession` (JSON message log + recommended-slugs). Anthropic Claude integration (`claude-sonnet-4-6` by default, configurable via `ANTHROPIC_MODEL`). System prompt embeds the current approved-therapist roster and a strict "do not act as a therapist / show crisis numbers if you see crisis signals" clause. Recommendations are extracted from a `<recommend>slug,…</recommend>` tag in the model output and re-validated against the DB so unapproved slugs can't surface. Empty `ANTHROPIC_API_KEY` → deterministic 4-turn dev fallback. Hero CTA "Être orienté·e en quelques questions" on the home page; standalone `/orientation/urgence/` page lists Algerian crisis numbers.
+  - **Real-time messaging**: `channels` + `daphne` + `channels-redis` + a Redis service (port 6385 to avoid local conflicts). `messaging.consumers.ThreadConsumer` validates conversation membership before joining `chat-<uuid>`. `bookings.services.post_message` broadcasts a `chat.new` event to the group; the thread template opens a WebSocket and HTMX listens for a `ws-new` body event to refresh the partial. Polling is kept as a 15-second fallback for connections that lose the socket. `REDIS_URL` env-driven; in-memory channel layer is the dev/CI default. Tests pass against the in-memory layer.
+
+  Tests: 61 passing (up from 59) — 2 new tests covering channel-layer broadcast on `post_message` and the consumer interface.
 
 - **2026-05-07** — **Phase 2 Pass 2 — In-app messaging (HTMX-poll, no Redis yet)**. New `messaging` app with `Conversation` (1:1 patient ↔ therapist, unique constraint) and `Message` (sender, body, created_at, notified_at) models. Patients can start a conversation from a therapist's public profile (`/messages/nouvelle/<slug>/`); therapists can only initiate with users who have an existing booking. Thread page at `/messages/<uuid>/` polls `_messages_partial.html` every 5 s via HTMX; sending a message HTMX-swaps the new list back into the thread without full reload. Email notifications throttled — recipients online inside the last 30 min skip the email since they'll see the message in-app. New `notifications.email.send_new_message` + FR `emails/new_message.{txt,html}` (uses the brand `_header.html`). Header nav grows a "Messages" link with an unread badge driven by a new `messaging.context_processors.unread_messages`. "Envoyer un message" CTA on therapist detail page (logged-in non-therapist users only). Admin gets `Conversation` + `Message` registered with read-only inline. Tests: 59 passing (up from 42) — covers role-gated initiation, third-party rejection, throttle behavior, unread counting, mark-seen, view-level isolation. Real-time WebSocket upgrade per PRD §14 stays deferred until polling pressure justifies adding Redis.
 - **2026-05-07** — **Visual asset wiring + brand system pinned**. Tailwind theme extended with `accent-{100,500,700}` (`#5b8a8a` muted teal — outside the candle/sage/terracotta wellness cliché per PRD positioning). [base.html](templates/base.html) now serves a real `<img>` wordmark in the header, declares `apple-touch-icon` + `favicon-32` links, and emits a full OG/Twitter meta block (`og:image` built via `request.scheme://request.get_host` + `{% static %}`). [manifest.webmanifest](templates/manifest.webmanifest) gained the `icons` array (192, 512, 512-maskable, apple-touch). Landing page rebuilt as a 2-column hero + "Comment ça marche" 3-step section. Therapist directory and detail page swap the initial-letter slate box for `default-avatar.svg` and render `badge-verified.svg` next to approved therapists. Empty-state illustrations wired to all five `{% empty %}` blocks (directory / inbox / availability / patient list / my_bookings). 403/404/500 each render their error illustration (500 stays self-contained — references the SVG via `{% static %}` served by WhiteNoise). Six transactional emails now `{% include "emails/_header.html" %}` for a logo header; new `SITE_URL` setting (env-driven, default `http://localhost:8000`) is injected into every email context by `notifications.email.send()` so absolute URLs work without `request`. Asset list saved at `~/.claude/plans/collect-all-the-requirement-rippling-catmull.md` for handoff to Claude Design.

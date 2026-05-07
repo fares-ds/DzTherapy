@@ -19,6 +19,10 @@ dependencies = [
     "requests>=2.32",
     "django-ratelimit>=4.1",
     "whitenoise>=6.7",
+    "anthropic>=0.40",
+    "channels>=4.1",
+    "channels-redis>=4.2",
+    "daphne>=4.1",
 ]
 
 [project.optional-dependencies]

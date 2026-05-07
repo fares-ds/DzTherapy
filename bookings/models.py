@@ -102,3 +102,57 @@ class Booking(models.Model):
     @property
     def can_join_session(self) -> bool:
         return self.state == BookingState.CONFIRMED and bool(self.daily_room_url)
+
+
+class Review(models.Model):
+    """Patient review of a completed session.
+
+    One per booking; only the user on the booking can post; only after the
+    booking is COMPLETED. Therapist's *average* rating shows on their public
+    profile (PRD §10 cautions against showing individual reviews at low
+    volume — gameable, biases prospective patients).
+    """
+
+    RATING_CHOICES = [(i, str(i)) for i in range(1, 6)]
+
+    booking = models.OneToOneField(
+        Booking,
+        on_delete=models.CASCADE,
+        related_name="review",
+    )
+    rating = models.PositiveSmallIntegerField(_("note"), choices=RATING_CHOICES)
+    comment = models.TextField(_("commentaire"), blank=True, max_length=2000)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ("-created_at",)
+        verbose_name = _("avis")
+        verbose_name_plural = _("avis")
+
+    def __str__(self) -> str:
+        return f"{self.rating}★ · {self.booking_id}"
+
+
+class SessionNote(models.Model):
+    """Therapist-private clinical note attached to a single booking.
+
+    EMR-lite per PRD §7 Phase 2 — strengthens year-2 monetization hook
+    because therapists who've accumulated session history won't churn.
+    Strictly private to the therapist; never shown to the patient.
+    """
+
+    booking = models.OneToOneField(
+        Booking,
+        on_delete=models.CASCADE,
+        related_name="session_note",
+    )
+    body = models.TextField(_("notes de séance"), blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = _("note de séance")
+        verbose_name_plural = _("notes de séance")
+
+    def __str__(self) -> str:
+        return f"Note · {self.booking_id}"

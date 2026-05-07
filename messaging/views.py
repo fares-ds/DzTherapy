@@ -81,11 +81,14 @@ def send_message(request: HttpRequest, conversation_id) -> HttpResponse:
     convo = get_object_or_404(Conversation, id=conversation_id)
     if not convo.includes(request.user):
         raise PermissionDenied
-    form = MessageForm(request.POST)
+    form = MessageForm(request.POST, request.FILES)
     if not form.is_valid():
-        return HttpResponseBadRequest(_("Message vide ou trop long."))
+        return HttpResponseBadRequest(_("Message vide, invalide ou trop long."))
     services.post_message(
-        conversation=convo, sender=request.user, body=form.cleaned_data["body"]
+        conversation=convo,
+        sender=request.user,
+        body=form.cleaned_data.get("body", ""),
+        voice_note=form.cleaned_data.get("voice_note"),
     )
     if request.headers.get("HX-Request"):
         messages = convo.messages.select_related("sender").all()

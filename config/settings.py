@@ -25,12 +25,15 @@ if not DEBUG:
 
 INSTALLED_APPS = [
     "django.contrib.admin",
+    # daphne must come BEFORE staticfiles so its `runserver` command takes over.
+    "daphne",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django.contrib.sites",
+    "channels",
     "django_tailwind_cli",
     "allauth",
     "allauth.account",
@@ -40,6 +43,7 @@ INSTALLED_APPS = [
     "bookings.apps.BookingsConfig",
     "notifications.apps.NotificationsConfig",
     "messaging.apps.MessagingConfig",
+    "intake.apps.IntakeConfig",
 ]
 
 MIDDLEWARE = [
@@ -78,6 +82,22 @@ TEMPLATES = [
 WSGI_APPLICATION = "config.wsgi.application"
 ASGI_APPLICATION = "config.asgi.application"
 
+# Channels (real-time messaging via WebSockets). REDIS_URL drives the channel
+# layer in prod; in dev/CI we fall back to the in-memory layer when no
+# REDIS_URL is set so tests stay self-contained.
+REDIS_URL = env("REDIS_URL", default="")
+if REDIS_URL:
+    CHANNEL_LAYERS = {
+        "default": {
+            "BACKEND": "channels_redis.core.RedisChannelLayer",
+            "CONFIG": {"hosts": [REDIS_URL]},
+        }
+    }
+else:
+    CHANNEL_LAYERS = {
+        "default": {"BACKEND": "channels.layers.InMemoryChannelLayer"},
+    }
+
 DATABASES = {"default": env.db("DATABASE_URL")}
 
 AUTH_USER_MODEL = "accounts.User"
@@ -98,7 +118,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 # Localization — French at MVP; Arabic added in Phase 2.
 LANGUAGE_CODE = "fr"
-LANGUAGES = [("fr", "Français")]
+LANGUAGES = [("fr", "Français"), ("ar", "العربية")]
 LOCALE_PATHS = [BASE_DIR / "locale"]
 TIME_ZONE = "Africa/Algiers"
 USE_I18N = True
@@ -171,6 +191,11 @@ SITE_URL = env("SITE_URL", default="http://localhost:8000")
 # Daily.co — stub if unset (booking flow falls back to a placeholder URL).
 DAILY_API_KEY = env("DAILY_API_KEY", default="")
 DAILY_DOMAIN = env("DAILY_DOMAIN", default="dztherapy")
+
+# Anthropic — AI intake assistant (PRD §12 Phase 2). Empty key disables the
+# assistant; the page shows a fallback link to the manual directory instead.
+ANTHROPIC_API_KEY = env("ANTHROPIC_API_KEY", default="")
+ANTHROPIC_MODEL = env("ANTHROPIC_MODEL", default="claude-sonnet-4-6")
 
 # Sentry — initialized only when SENTRY_DSN is non-empty (silent in dev by default).
 SENTRY_DSN = env("SENTRY_DSN", default="")

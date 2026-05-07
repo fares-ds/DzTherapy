@@ -22,23 +22,66 @@
     </header>
 
     <div id="thread"
+         data-poll-url="{% url 'messaging:thread_messages' conversation_id=conversation.id %}"
+         data-ws-url="/ws/messages/{{ conversation.id }}/"
          hx-get="{% url 'messaging:thread_messages' conversation_id=conversation.id %}"
-         hx-trigger="every 5s"
+         hx-trigger="ws-new from:body, every 15s"
          hx-swap="innerHTML">
         {% include "messaging/_messages_partial.html" %}
     </div>
 
+    <script>
+    // Open a WebSocket; on every "new" payload, fire a `ws-new` event that
+    // HTMX listens for above. The `every 15s` is a backstop in case the WS
+    // drops silently — way longer than the 5s poll because it's only a fallback.
+    (function () {
+        const thread = document.getElementById('thread');
+        if (!thread || !window.WebSocket) return;
+        const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const url = proto + '//' + location.host + thread.dataset.wsUrl;
+        let ws;
+        function connect() {
+            try { ws = new WebSocket(url); } catch (e) { return; }
+            ws.onmessage = (ev) => {
+                try {
+                    const data = JSON.parse(ev.data);
+                    if (data.type === 'new') {
+                        document.body.dispatchEvent(new Event('ws-new'));
+                    }
+                } catch (_) {}
+            };
+            // Auto-reconnect with backoff on close.
+            ws.onclose = () => { setTimeout(connect, 3000); };
+        }
+        connect();
+    })();
+    </script>
+
     <div id="compose" class="bg-white border border-slate-200 rounded-md px-4 py-3 mt-3">
         <form id="message-form"
               method="post"
+              enctype="multipart/form-data"
               action="{% url 'messaging:send' conversation_id=conversation.id %}"
               hx-post="{% url 'messaging:send' conversation_id=conversation.id %}"
               hx-target="#thread"
               hx-swap="innerHTML"
+              hx-encoding="multipart/form-data"
               hx-on::after-request="if(event.detail.successful) this.reset()">
             {% csrf_token %}
             {{ form.body }}
-            <div class="mt-2 flex justify-end">
+            <div class="mt-2 flex flex-wrap items-center justify-between gap-2">
+                <div class="flex items-center gap-3 text-sm text-slate-600">
+                    <label class="cursor-pointer hover:text-slate-900 inline-flex items-center gap-1">
+                        🎤 <span>{% trans "Fichier audio" %}</span>
+                        <span style="display:none">{{ form.voice_note }}</span>
+                    </label>
+                    <button type="button" onclick="toggleRecording()"
+                            class="hover:text-slate-900 inline-flex items-center gap-1">
+                        <span id="record-dot">●</span>
+                        <span id="record-label">{% trans "Enregistrer" %}</span>
+                    </button>
+                    <span id="record-status" class="text-xs text-slate-500"></span>
+                </div>
                 <button type="submit" class="rounded-md bg-slate-900 px-4 py-2 text-sm text-white hover:bg-slate-700">
                     {% trans "Envoyer" %}
                 </button>
@@ -46,4 +89,52 @@
         </form>
     </div>
 </div>
+
+<script>
+(function () {
+    let recorder = null;
+    let chunks = [];
+    let stream = null;
+    window.toggleRecording = async function () {
+        const label = document.getElementById("record-label");
+        const dot = document.getElementById("record-dot");
+        const status = document.getElementById("record-status");
+        const fileInput = document.querySelector('#message-form input[type=file][name=voice_note]');
+        if (!window.MediaRecorder) {
+            status.textContent = "{% trans 'Enregistrement non supporté.' %}";
+            return;
+        }
+        if (recorder && recorder.state === "recording") {
+            recorder.stop();
+            return;
+        }
+        try {
+            stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        } catch (err) {
+            status.textContent = "{% trans 'Microphone indisponible.' %}";
+            return;
+        }
+        chunks = [];
+        recorder = new MediaRecorder(stream);
+        recorder.ondataavailable = (e) => chunks.push(e.data);
+        recorder.onstop = () => {
+            const mime = recorder.mimeType || "audio/webm";
+            const blob = new Blob(chunks, { type: mime });
+            const ext = mime.includes("mp4") ? "m4a" : (mime.includes("ogg") ? "ogg" : "webm");
+            const file = new File([blob], `voice-note.${ext}`, { type: blob.type });
+            const dt = new DataTransfer();
+            dt.items.add(file);
+            fileInput.files = dt.files;
+            label.textContent = "{% trans 'Enregistrer' %}";
+            dot.style.color = "";
+            status.textContent = `{% trans 'Note prête' %} (${Math.round(blob.size / 1024)} KB)`;
+            stream.getTracks().forEach(t => t.stop());
+        };
+        recorder.start();
+        label.textContent = "{% trans 'Arrêter' %}";
+        dot.style.color = "#dc2626";
+        status.textContent = "{% trans 'Enregistrement…' %}";
+    };
+})();
+</script>
 {% endblock %}

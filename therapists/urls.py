@@ -37,6 +37,11 @@ urlpatterns = [
         name="decline_booking",
     ),
     path("dashboard/patients/", views.patient_list, name="patient_list"),
+    path(
+        "dashboard/sessions/<uuid:booking_id>/notes/",
+        views.session_note_editor,
+        name="session_note_editor",
+    ),
     # Public profile (must come after fixed routes to avoid slug collision)
     path("<slug:slug>/", views.therapist_detail, name="detail"),
 ]

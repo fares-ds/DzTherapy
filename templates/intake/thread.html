@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "Trouver un·e thérapeute adapté·e" %} — DzTherapy{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <div class="mb-4">
+        <h1 class="text-2xl font-semibold text-slate-900">{% trans "Orientation guidée" %}</h1>
+        <p class="text-sm text-slate-600">
+            {% trans "Quelques questions pour vous suggérer 2–3 profils adaptés. Cette conversation reste privée." %}
+        </p>
+        {% if not ai_enabled %}
+        <p class="mt-2 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded p-2">
+            {% trans "Mode hors-ligne : les recommandations sont basées sur le profil le plus récent — l'assistant IA est désactivé sur cet environnement." %}
+        </p>
+        {% endif %}
+    </div>
+
+    <div id="intake-thread">
+        {% include "intake/_thread_swap.html" %}
+    </div>
+
+    <p class="mt-6 text-xs text-slate-500 text-center">
+        {% trans "En cas d'urgence vitale," %}
+        <a href="{% url 'intake:crisis' %}" class="underline">{% trans "voir les numéros d'urgence" %}</a>.
+    </p>
+    <p class="mt-2 text-xs text-slate-500 text-center italic">
+        {% trans "Cet assistant n'est pas un·e thérapeute et ne fournit aucun diagnostic ni traitement." %}
+    </p>
+</div>
+{% endblock %}

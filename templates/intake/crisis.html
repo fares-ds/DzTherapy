@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "Numéros d'urgence" %} — DzTherapy{% endblock %}
+
+{% block content %}
+<div class="max-w-xl mx-auto bg-white border border-slate-200 rounded-md p-6 sm:p-8">
+    <h1 class="text-2xl font-semibold text-slate-900 mb-2">{% trans "Vous traversez une urgence ?" %}</h1>
+    <p class="text-slate-600 mb-5">
+        {% trans "Si vous êtes en danger immédiat ou pensez à vous faire du mal, contactez immédiatement l'un des numéros suivants. DzTherapy n'est pas un service d'urgence." %}
+    </p>
+    <ul class="space-y-2 mb-6">
+        {% for label, number in crisis_lines %}
+        <li class="flex items-center justify-between rounded-md border border-slate-200 bg-slate-50 px-4 py-3">
+            <span class="text-sm text-slate-700">{{ label }}</span>
+            <a href="tel:{{ number }}" class="font-mono font-semibold text-slate-900">{{ number }}</a>
+        </li>
+        {% endfor %}
+    </ul>
+    <p class="text-xs text-slate-500">
+        {% trans "Ces numéros sont vérifiés annuellement. En cas d'erreur ou de mise à jour, écrivez à" %}
+        <a href="mailto:contact@dztherapy.example" class="underline">contact@dztherapy.example</a>.
+    </p>
+</div>
+{% endblock %}

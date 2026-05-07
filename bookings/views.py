@@ -15,7 +15,7 @@ from django.views.decorators.http import require_POST
 from django_ratelimit.decorators import ratelimit
 
 from bookings import services as booking_services
-from bookings.forms import BookingNotesForm, MarkPaidForm
+from bookings.forms import BookingNotesForm, MarkPaidForm, ReviewForm
 from bookings.models import ACTIVE_STATES, Booking, BookingState
 from notifications import email as notify
 from therapists.models import TherapistProfile, VerificationStatus
@@ -167,6 +167,37 @@ def cancel_booking(request: HttpRequest, booking_id) -> HttpResponse:
             ),
         )
     return redirect("bookings:payment_instructions", booking_id=booking.id)
+
+
+@login_required
+def leave_review(request: HttpRequest, booking_id) -> HttpResponse:
+    """Patient submits a review for a completed booking."""
+    booking = _booking_for_user(request, booking_id)
+    if booking.state != BookingState.COMPLETED:
+        messages.error(
+            request,
+            _("Vous ne pouvez laisser un avis qu'après une séance terminée."),
+        )
+        return redirect("bookings:my_bookings")
+    if hasattr(booking, "review"):
+        messages.info(request, _("Vous avez déjà laissé un avis pour cette séance."))
+        return redirect("bookings:my_bookings")
+
+    if request.method == "POST":
+        form = ReviewForm(request.POST)
+        if form.is_valid():
+            review = form.save(commit=False)
+            review.booking = booking
+            review.save()
+            messages.success(request, _("Merci pour votre avis."))
+            return redirect("bookings:my_bookings")
+    else:
+        form = ReviewForm()
+    return render(
+        request,
+        "bookings/leave_review.html",
+        {"form": form, "booking": booking},
+    )
 
 
 @login_required

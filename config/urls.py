@@ -9,11 +9,13 @@ urlpatterns = [
     # Founder dashboard must come before admin/ to avoid being shadowed.
     path("admin/dztherapy/dashboard/", founder_dashboard, name="founder_dashboard"),
     path("admin/", admin.site.urls),
+    path("i18n/", include("django.conf.urls.i18n")),
     path("accounts/", include("allauth.urls")),
     path("mon-compte/", include("accounts.urls")),
     path("therapeutes/", include("therapists.urls")),
     path("reservations/", include("bookings.urls")),
     path("messages/", include("messaging.urls")),
+    path("orientation/", include("intake.urls")),
     path("", include("core.urls")),
 ]
 

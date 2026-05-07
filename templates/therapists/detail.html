@@ -25,6 +25,15 @@
             <p class="mt-2 text-sm text-slate-500">
                 {% trans "Langues" %} : {{ therapist.languages }} · {{ therapist.session_price_dzd }} DZD / {{ therapist.session_duration_minutes }} min
             </p>
+            {% with rs=therapist.rating_summary %}
+            {% if rs.count %}
+            <p class="mt-2 text-sm text-slate-700">
+                <span class="text-amber-500">★</span>
+                <strong>{{ rs.avg|floatformat:1 }}</strong>
+                <span class="text-slate-500">/ 5 · {% blocktrans count count=rs.count %}{{ count }} avis{% plural %}{{ count }} avis{% endblocktrans %}</span>
+            </p>
+            {% endif %}
+            {% endwith %}
         </div>
     </header>
 
