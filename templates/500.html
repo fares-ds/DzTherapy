@@ -1,0 +1,27 @@
+{% load i18n %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% trans "Erreur" %} — DzTherapy</title>
+    <style>
+        body { background: #f8fafc; color: #0f172a; font-family: system-ui, sans-serif; margin: 0; padding: 2rem; }
+        .card { max-width: 32rem; margin: 4rem auto; background: #fff; border: 1px solid #e2e8f0; border-radius: 0.5rem; padding: 2rem; text-align: center; }
+        .label { color: #64748b; font-size: 0.875rem; margin-bottom: 0.5rem; }
+        h1 { margin: 0 0 0.5rem; font-size: 1.5rem; }
+        p { color: #475569; }
+        a { color: #0f172a; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <p class="label">500</p>
+        <h1>{% trans "Une erreur est survenue" %}</h1>
+        <p>
+            {% trans "Notre équipe a été notifiée. Merci de réessayer dans quelques instants." %}
+        </p>
+        <p style="margin-top: 1.5rem;"><a href="/">{% trans "Retour à l'accueil" %}</a></p>
+    </div>
+</body>
+</html>

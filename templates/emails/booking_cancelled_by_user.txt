@@ -1,0 +1,10 @@
+Bonjour {{ booking.therapist.full_name }},
+
+{{ booking.user.email }} a annulé sa demande de séance prévue le
+{{ booking.slot_start|date:"l j F Y H:i" }}.
+
+{% if booking.cancellation_reason %}Motif : {{ booking.cancellation_reason }}
+
+{% endif %}Le créneau est de nouveau disponible pour d'autres patient·e·s.
+
+— DzTherapy

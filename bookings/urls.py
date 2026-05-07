@@ -12,5 +12,6 @@ urlpatterns = [
         name="payment_instructions",
     ),
     path("<uuid:booking_id>/marquer-paye/", views.mark_paid, name="mark_paid"),
+    path("<uuid:booking_id>/annuler/", views.cancel_booking, name="cancel"),
     path("<uuid:booking_id>/seance/", views.session_room, name="session_room"),
 ]

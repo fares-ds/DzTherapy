@@ -1,0 +1,13 @@
+Bonjour,
+
+Petit rappel : votre séance entre {{ booking.user.email }} et
+{{ booking.therapist.full_name }} a lieu demain,
+le {{ booking.slot_start|date:"l j F Y H:i" }}.
+
+Lien vidéo (à ouvrir au moment de la séance) :
+{{ booking.daily_room_url }}
+
+Pensez à tester votre micro et caméra à l'avance, et à vous connecter
+quelques minutes avant l'heure prévue.
+
+— DzTherapy

@@ -31,6 +31,11 @@ urlpatterns = [
         views.confirm_payment,
         name="confirm_payment",
     ),
+    path(
+        "dashboard/messages/<uuid:booking_id>/refuser/",
+        views.decline_booking,
+        name="decline_booking",
+    ),
     path("dashboard/patients/", views.patient_list, name="patient_list"),
     # Public profile (must come after fixed routes to avoid slug collision)
     path("<slug:slug>/", views.therapist_detail, name="detail"),

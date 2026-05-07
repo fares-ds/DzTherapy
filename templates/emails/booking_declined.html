@@ -1,0 +1,9 @@
+<p>Bonjour,</p>
+
+<p>Votre demande de séance avec <strong>{{ booking.therapist.full_name }}</strong> prévue le <strong>{{ booking.slot_start|date:"l j F Y H:i" }}</strong> n'a pas pu être confirmée.</p>
+
+{% if booking.cancellation_reason %}<p><em>Motif : {{ booking.cancellation_reason }}</em></p>{% endif %}
+
+<p>Vous pouvez consulter d'autres thérapeutes ou choisir un autre créneau.</p>
+
+<p>— DzTherapy</p>

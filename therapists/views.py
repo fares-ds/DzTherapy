@@ -205,6 +205,28 @@ def confirm_payment(request: HttpRequest, booking_id) -> HttpResponse:
     return redirect("therapists:booking_inbox")
 
 
+@_therapist_required
+@require_POST
+def decline_booking(request: HttpRequest, booking_id) -> HttpResponse:
+    booking = get_object_or_404(
+        Booking, id=booking_id, therapist=request.therapist_profile
+    )
+    reason = request.POST.get("reason", "").strip()
+    transitioned = booking_services.therapist_decline(booking, reason=reason)
+    if transitioned:
+        messages.success(
+            request, _("Demande refusée. Le ou la patient·e a été notifié·e.")
+        )
+    if request.headers.get("HX-Request"):
+        booking.refresh_from_db()
+        return render(
+            request,
+            "therapists/_inbox_row_partial.html",
+            {"booking": booking, "states": BookingState},
+        )
+    return redirect("therapists:booking_inbox")
+
+
 # Patient list (D6) -----------------------------------------------------
 
 

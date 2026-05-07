@@ -6,10 +6,12 @@ from datetime import datetime, timedelta
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.db import IntegrityError, transaction
 from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
+from django.views.decorators.http import require_POST
 
 from bookings import services as booking_services
 from bookings.forms import BookingNotesForm, MarkPaidForm
@@ -54,26 +56,31 @@ def create_booking(request: HttpRequest, therapist_slug: str) -> HttpResponse:
 
     slot_end = slot_start + timedelta(minutes=therapist.session_duration_minutes)
 
-    # Slot collision check
-    if Booking.objects.filter(
-        therapist=therapist,
-        slot_start=slot_start,
-        state__in=ACTIVE_STATES,
-    ).exists():
-        messages.error(
-            request, _("Ce créneau vient d'être réservé. Choisissez-en un autre.")
-        )
-        return redirect("therapists:detail", slug=therapist.slug)
-
     if request.method == "POST" and "user_notes" in request.POST:
         form = BookingNotesForm(request.POST)
         if form.is_valid():
-            booking = form.save(commit=False)
-            booking.user = request.user
-            booking.therapist = therapist
-            booking.slot_start = slot_start
-            booking.slot_end = slot_end
-            booking.save()
+            try:
+                with transaction.atomic():
+                    # Lock the therapist row to serialize concurrent bookings.
+                    TherapistProfile.objects.select_for_update().get(pk=therapist.pk)
+                    if Booking.objects.filter(
+                        therapist=therapist,
+                        slot_start=slot_start,
+                        state__in=ACTIVE_STATES,
+                    ).exists():
+                        raise _SlotTaken
+                    booking = form.save(commit=False)
+                    booking.user = request.user
+                    booking.therapist = therapist
+                    booking.slot_start = slot_start
+                    booking.slot_end = slot_end
+                    booking.save()
+            except (_SlotTaken, IntegrityError):
+                messages.error(
+                    request,
+                    _("Ce créneau vient d'être réservé. Choisissez-en un autre."),
+                )
+                return redirect("therapists:detail", slug=therapist.slug)
             notify.send_booking_submitted(booking)
             return redirect("bookings:payment_instructions", booking_id=booking.id)
     else:
@@ -89,6 +96,10 @@ def create_booking(request: HttpRequest, therapist_slug: str) -> HttpResponse:
             "form": form,
         },
     )
+
+
+class _SlotTaken(Exception):
+    """Raised inside the atomic block when the slot was already booked."""
 
 
 def _booking_for_user(request: HttpRequest, booking_id) -> Booking:
@@ -133,6 +144,25 @@ def mark_paid(request: HttpRequest, booking_id) -> HttpResponse:
         "bookings/mark_paid.html",
         {"booking": booking, "form": form},
     )
+
+
+@login_required
+@require_POST
+def cancel_booking(request: HttpRequest, booking_id) -> HttpResponse:
+    """User cancels their own booking. Allowed only before the therapist confirms."""
+    booking = _booking_for_user(request, booking_id)
+    reason = request.POST.get("reason", "").strip()
+    if booking_services.user_cancel(booking, reason=reason):
+        messages.success(request, _("Réservation annulée."))
+    else:
+        messages.error(
+            request,
+            _(
+                "Cette séance ne peut plus être annulée en ligne. "
+                "Contactez directement votre thérapeute pour toute modification."
+            ),
+        )
+    return redirect("bookings:payment_instructions", booking_id=booking.id)
 
 
 @login_required

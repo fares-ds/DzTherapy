@@ -2,6 +2,7 @@ import uuid
 
 from django.conf import settings
 from django.db import models
+from django.db.models import Q
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 
@@ -57,6 +58,13 @@ class Booking(models.Model):
     cancellation_reason = models.CharField(
         _("raison d'annulation"), max_length=255, blank=True
     )
+    cancelled_by = models.CharField(
+        _("annulé·e par"),
+        max_length=16,
+        blank=True,
+        choices=(("user", "user"), ("therapist", "therapist"), ("system", "system")),
+    )
+    reminder_sent_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -64,6 +72,22 @@ class Booking(models.Model):
         ordering = ("-slot_start",)
         verbose_name = _("réservation")
         verbose_name_plural = _("réservations")
+        constraints = [
+            # DB-level lock that prevents two active bookings on the same slot.
+            # Postgres partial unique index — `state` is in ACTIVE_STATES.
+            models.UniqueConstraint(
+                fields=("therapist", "slot_start"),
+                condition=Q(
+                    state__in=(
+                        "pending_payment",
+                        "awaiting_confirmation",
+                        "confirmed",
+                        "completed",
+                    )
+                ),
+                name="unique_active_booking_slot",
+            ),
+        ]
 
     def __str__(self) -> str:
         return f"{self.user.email} → {self.therapist.full_name} @ {self.slot_start:%Y-%m-%d %H:%M}"

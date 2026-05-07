@@ -107,3 +107,40 @@ def send_booking_confirmed(booking) -> None:
         template="booking_confirmed",
         context=ctx,
     )
+
+
+def send_booking_declined(booking) -> None:
+    """Therapist declined — notify the user."""
+    send(
+        to=booking.user.email,
+        subject="Votre demande de séance n'a pas pu être confirmée",
+        template="booking_declined",
+        context={"booking": booking},
+    )
+
+
+def send_booking_cancelled_by_user(booking) -> None:
+    """User cancelled — notify the therapist."""
+    send(
+        to=booking.therapist.user.email,
+        subject="Séance annulée par le ou la patient·e",
+        template="booking_cancelled_by_user",
+        context={"booking": booking},
+    )
+
+
+def send_session_reminder(booking) -> None:
+    """T-24h reminder to both parties."""
+    ctx = {"booking": booking}
+    send(
+        to=booking.user.email,
+        subject="Rappel : votre séance demain",
+        template="session_reminder",
+        context=ctx,
+    )
+    send(
+        to=booking.therapist.user.email,
+        subject="Rappel : séance demain",
+        template="session_reminder",
+        context=ctx,
+    )

@@ -146,6 +146,11 @@ make dev                  # terminal 2: Django on :8000
 make test                 # run pytest
 make lint                 # ruff check + black --check (no changes)
 make format               # ruff --fix + black (auto-fix)
+
+# One-time helpers
+.venv/bin/python manage.py seed_demo          # populate demo therapists + patient
+.venv/bin/python manage.py send_reminders     # T-24h reminder emails (cron-style)
+.venv/bin/python manage.py finalize_bookings  # auto-COMPLETED for past CONFIRMED (cron-style)
 ```
 
 `make help` lists all targets. The Tailwind binary auto-downloads on the first `make tailwind` run via `django-tailwind-cli`.
